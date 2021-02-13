@@ -2,11 +2,9 @@
     "name": "hrm-trainer-control",
     "version": "0.0.0",
     "scripts": {
-        "ng": "ng",
         "start": "ng serve --open",
         "build": "ng build",
         "lint": "eslint . --ext .ts,.js",
-        "e2e": "ng e2e",
         "lint:fix": "eslint . --ext .ts,.js --fix",
         "prepublishOnly": "npm run build --if-present && npm run test --if-present && npm run lint --if-present"
     },
@@ -40,6 +38,7 @@
         "eslint-plugin-node": "^11.1.0",
         "eslint-plugin-prettier": "^3.3.1",
         "eslint-plugin-promise": "^4.3.1",
+        "eslint-plugin-simple-import-sort": "^7.0.0",
         "jasmine-core": "~3.6.0",
         "jasmine-spec-reporter": "~5.0.0",
         "karma": "~5.2.0",
