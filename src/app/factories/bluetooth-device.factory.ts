@@ -37,7 +37,11 @@ export class HeartRateSensor {
     public async disconnect(): Promise<boolean> {
         if (this.characteristic != null) {
             console.log(`Stopping notifications`, this.characteristic);
-            await this.characteristic.stopNotifications();
+            try {
+                await this.characteristic.stopNotifications();
+            } catch (e) {
+                console.log(`Error stopping notifications: `, e);
+            }
         }
 
         if (this.server) {
