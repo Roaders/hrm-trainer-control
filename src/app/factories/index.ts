@@ -1,1 +1,1 @@
-export * from "./bluetooth-device.factory"
+export * from './bluetooth-device.factory';
