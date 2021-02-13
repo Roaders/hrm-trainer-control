@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { Subscription } from 'rxjs';
 
-import { BluetoothDeviceFactory, HeartRateSensor } from '../../factories/';
+import { HeartRateDevice } from '../../devices/heart-rate.device';
 
 @Component({
     selector: 'heart-rate',
@@ -9,30 +9,25 @@ import { BluetoothDeviceFactory, HeartRateSensor } from '../../factories/';
     styleUrls: ['./heart-rate.component.scss'],
 })
 export class HeartRateComponent {
-    constructor(private sensorFactory: BluetoothDeviceFactory) {}
+    constructor(private heartRate: HeartRateDevice) {}
 
-    private sensor?: HeartRateSensor;
     private subscription?: Subscription;
 
     public async disconnect(): Promise<void> {
         if (this.subscription) {
             this.subscription.unsubscribe();
+            this.subscription = undefined;
         }
-        if (this.sensor) {
-            await this.sensor.disconnect();
-        }
+        await this.heartRate.disconnect();
     }
 
     public connectSensor(): void {
         console.log(`Connecting...`);
-        const sensor = this.sensor || this.sensorFactory.create();
-        this.subscription = sensor.connect().subscribe(
+        this.subscription = this.heartRate.connect().subscribe(
             (measurement) => console.log(`Result`, measurement),
             (error) => {
                 console.log(`Error connecting to sensor`, error);
             },
         );
-
-        this.sensor = sensor;
     }
 }

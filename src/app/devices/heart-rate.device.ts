@@ -7,13 +7,7 @@ import { parseHeartRate } from '../helpers';
 import { connectServer, getNotifications, getService, requestDevice } from '../helpers/bluetooth.helper';
 
 @Injectable()
-export class BluetoothDeviceFactory {
-    public create(): HeartRateSensor {
-        return new HeartRateSensor();
-    }
-}
-
-export class HeartRateSensor {
+export class HeartRateDevice {
     private server?: BluetoothRemoteGATTServer;
     private characteristic?: BluetoothRemoteGATTCharacteristic;
 
