@@ -1,15 +1,33 @@
+<div class="col-sm m-auto">
 
-<div>
+    <div *ngIf="warningMessage != null" class="alert alert-warning alert-dismissible mt-3">
+        {{warningMessage}}
 
-    <div>
-        <button type="button" (click)="connectSensor()">Connect Sensor</button>
+        <button type="button" class="close" aria-label="Close" (click)="dismissMessages()">
+            <span aria-hidden="true">&times;</span>
+        </button>
     </div>
 
-    <div>
-        <button type="button" (click)="disconnect()">Disconnect Sensor</button>
+    <div *ngIf="errorMessage != null" class="alert alert-danger alert-dismissible mt-3">
+        {{errorMessage}}
+
+        <button type="button" class="close" aria-label="Close" (click)="dismissMessages()">
+            <span aria-hidden="true">&times;</span>
+        </button>
     </div>
 
+    <div class="center-content position-relative">
+        <div *ngIf="buttonText != null" class="button-overlay center-content">
+            <button type="button" class="btn btn-primary" [disabled]="!buttonEnabled" (click)="connectSensor()">{{buttonText}}</button>
+        </div>
 
-    <i class="bi-heart"></i>
+        <div *ngIf="heartRate != null" class="button-overlay center-content heart-rate">
+            {{heartRate}}
+        </div>
+
+        <div>
+            <i class="bi-heart-fill"></i>
+        </div>
+    </div>
 
 </div>
