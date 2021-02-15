@@ -4,4 +4,4 @@
 
 Control the target power of your smart turbo trainer to maintain your heart rate in a target zone.
 
-Try it out [here][https://roaders.github.io/hrm-trainer-control/].
+Try it out [here](https://roaders.github.io/hrm-trainer-control/).
