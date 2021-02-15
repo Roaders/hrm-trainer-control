@@ -484,7 +484,6 @@ var _package_json__WEBPACK_IMPORTED_MODULE_1___namespace = /*#__PURE__*/__webpac
 
 class AppModule {
     constructor() {
-        console.log(`setting version: ${_package_json__WEBPACK_IMPORTED_MODULE_1__["version"]}`);
         document.title = `HRM Trainer Control ${_package_json__WEBPACK_IMPORTED_MODULE_1__["version"]}`;
     }
 }
