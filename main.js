@@ -404,7 +404,7 @@ ${this._logOutput}]`;
         }
     }
     log(data) {
-        this._logOutput += `${JSON.stringify(Object.assign(Object.assign({}, data), { at: Date.now() }))},\n`;
+        this._logOutput = `${JSON.stringify(Object.assign(Object.assign({}, data), { at: Date.now() }))},\n${this._logOutput}`;
     }
 }
 HeartRateComponent.ɵfac = function HeartRateComponent_Factory(t) { return new (t || HeartRateComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_devices_heart_rate_device__WEBPACK_IMPORTED_MODULE_4__["HeartRateDevice"])); };
