@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { share } from 'rxjs/operators';
 
 import { NOT_FOUND_ERROR } from '../../constants';
 import { HeartRateResult, ProgressMessage } from '../../contracts';
