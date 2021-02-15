@@ -1,25 +1,24 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Trainer.ComponentComponent } from './trainer.component.component';
+import { TrainerComponent } from './trainer.component';
 
 describe('Trainer.ComponentComponent', () => {
-  let component: Trainer.ComponentComponent;
-  let fixture: ComponentFixture<Trainer.ComponentComponent>;
+    let component: TrainerComponent;
+    let fixture: ComponentFixture<TrainerComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [ Trainer.ComponentComponent ]
-    })
-    .compileComponents();
-  });
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            declarations: [TrainerComponent],
+        }).compileComponents();
+    });
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(Trainer.ComponentComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    beforeEach(() => {
+        fixture = TestBed.createComponent(TrainerComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 });

@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { merge, Observable } from 'rxjs';
+import { map, share, switchMap, takeUntil, tap } from 'rxjs/operators';
 
 import { HeartRateResult } from '../contracts';
 import { parseHeartRate } from '../helpers';
-import { connectServer, getNotifications, getService, requestDevice } from '../helpers/bluetooth.helper';
+import { connectServer, getNotifications, getService, requestDevice, timeOutStream } from '../helpers/bluetooth.helper';
 
 @Injectable()
 export class HeartRateDevice {
@@ -12,20 +12,7 @@ export class HeartRateDevice {
     private characteristic?: BluetoothRemoteGATTCharacteristic;
 
     public connect(): Observable<HeartRateResult> {
-        return requestDevice(['heart_rate']).pipe(
-            tap(({ server }) => {
-                this.server = server;
-            }),
-            map(({ server }) => server),
-            switchMap(connectServer),
-            switchMap((server) => getService(server, 'heart_rate')),
-            switchMap((service) => service.getCharacteristic('heart_rate_measurement')),
-            tap((characteristic) => {
-                this.characteristic = characteristic;
-            }),
-            switchMap((characteristic) => getNotifications(characteristic)),
-            map(parseHeartRate),
-        );
+        return requestDevice(['heart_rate']).pipe(switchMap((server) => this.subscribeToUpdates(server)));
     }
 
     public async disconnect(): Promise<boolean> {
@@ -47,5 +34,22 @@ export class HeartRateDevice {
         this.characteristic = undefined;
 
         return true;
+    }
+
+    private subscribeToUpdates(server: BluetoothRemoteGATTServer) {
+        this.server = server;
+
+        const updatesStream = connectServer(server).pipe(
+            switchMap((server) => getService(server, 'heart_rate')),
+            switchMap((service) => service.getCharacteristic('heart_rate_measurement')),
+            tap((characteristic) => {
+                this.characteristic = characteristic;
+            }),
+            switchMap((characteristic) => getNotifications(characteristic)),
+            map(parseHeartRate),
+            share(),
+        );
+
+        return merge(timeOutStream<HeartRateResult>(60000).pipe(takeUntil(updatesStream)), updatesStream);
     }
 }

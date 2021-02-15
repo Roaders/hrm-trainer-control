@@ -1,23 +1,23 @@
-import { from, Observable } from 'rxjs';
-import { catchError, map, mergeMap, tap } from 'rxjs/operators';
+import { from, interval, merge, Observable, of } from 'rxjs';
+import { catchError, map, switchMap, take, tap } from 'rxjs/operators';
 
-const retryCount = 3;
+const retryCount = 5;
 
 export function requestDevice(
     services: [BluetoothServiceUUID, ...BluetoothServiceUUID[]],
     retries = 0,
-): Observable<{ device: BluetoothDevice; server: BluetoothRemoteGATTServer }> {
+): Observable<BluetoothRemoteGATTServer> {
     console.log(`requestDevice(${retries})...`, services);
     return from(navigator.bluetooth.requestDevice({ filters: [{ services }] })).pipe(
-        tap((device) => console.log(`Device Connected:`, device.name)),
+        tap((device) => console.log(`Device Selected:`, device.name)),
         map((device) => {
             if (device.gatt == null) {
                 throw new Error(`gatt is not defined on device`);
             }
-            return { device, server: device.gatt };
+            return device.gatt;
         }),
         catchError((err) => {
-            console.log(`Error connecting to device`, err);
+            console.log(`Error selecting device`, err);
             if (retries >= retryCount || err.name === 'NotFoundError') {
                 throw err;
             } else {
@@ -27,10 +27,61 @@ export function requestDevice(
     );
 }
 
+export function timeOutStream<T>(timeInMs: number): Observable<T> {
+    console.log(`Starting timeout...`, timeInMs);
+
+    return interval(timeInMs).pipe(
+        take(1),
+        map(() => {
+            throw new Error(`Timeout waiting for device connection.`);
+        }),
+    );
+}
+
+export function handleDeviceDisconnection(server: BluetoothRemoteGATTServer): Observable<BluetoothRemoteGATTServer> {
+    const disconnectionStream = new Observable<BluetoothRemoteGATTServer>((observer) => {
+        function handleEvent(event: Event) {
+            console.log(`Gatt server disconnected`, event);
+            observer.next(server);
+        }
+        console.log(`Add event listener: gattserverdisconnected`);
+        server.device.addEventListener('gattserverdisconnected', handleEvent);
+
+        return {
+            unsubscribe: () => {
+                console.log(`Remove Event Listener: gattserverdisconnected`);
+                server.device.removeEventListener('gattserverdisconnected', handleEvent);
+            },
+        };
+    }).pipe(switchMap(() => connectServer(server)));
+
+    return merge(of(server), disconnectionStream);
+}
+
 export function connectServer(server: BluetoothRemoteGATTServer, retries = 0): Observable<BluetoothRemoteGATTServer> {
     console.log(`connectServer(${retries})...`);
-    return from(server.connect()).pipe(
-        tap(() => console.log(`Server Connected`)),
+
+    return new Observable<BluetoothRemoteGATTServer>((observer) => {
+        console.log(`Connecting to server...`);
+        server.connect().then(
+            () => {
+                console.log(`Server Connected`, server);
+                observer.next(server);
+            },
+            (error) => observer.error(error),
+        );
+
+        return {
+            unsubscribe: () => {
+                if (server.connected) {
+                    console.log(`Disconnecting from server...`, server);
+                    server.disconnect();
+                } else {
+                    console.log(`Server already disconnected`, server);
+                }
+            },
+        };
+    }).pipe(
         catchError((err) => {
             console.log(`Error connecting to server`, err);
             if (retries < retryCount) {
@@ -48,13 +99,14 @@ export function getService(
     retries = 0,
 ): Observable<BluetoothRemoteGATTService> {
     console.log(`getService(${retries}) '${service}'...`, server);
+
     return from(server.getPrimaryService(service)).pipe(
         tap(() => console.log(`Service returned`)),
         catchError((err) => {
             console.log(`Error getting service: '${service}'`, server, err);
             if (!server.connected) {
                 return connectServer(server, retries + 1).pipe(
-                    mergeMap(() => getService(server, service, retries + 1)),
+                    switchMap(() => getService(server, service, retries + 1)),
                 );
             } else if (retries < 3) {
                 return getService(server, service, retries + 1);

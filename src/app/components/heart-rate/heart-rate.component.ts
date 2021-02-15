@@ -85,6 +85,7 @@ export class HeartRateComponent {
         this._buttonEnabled = false;
         this._buttonText = undefined;
         this._heartRate = result.heartRate;
+        console.log(`Heart Rate Result`, result);
     }
 
     private handleError(error: unknown, message?: string) {
