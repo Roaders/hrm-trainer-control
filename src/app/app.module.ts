@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
+import { version } from '../../package.json';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './components/app/app.component';
 import { HeartRateComponent } from './components/heart-rate/heart-rate.component';
@@ -13,4 +14,9 @@ import { HeartRateDevice } from './devices/heart-rate.device';
     providers: [HeartRateDevice],
     bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule {
+    constructor() {
+        console.log(`setting version: ${version}`);
+        document.title = `HRM Trainer Control ${version}`;
+    }
+}
