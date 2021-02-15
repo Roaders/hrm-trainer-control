@@ -16,7 +16,6 @@ import { HeartRateDevice } from './devices/heart-rate.device';
 })
 export class AppModule {
     constructor() {
-        console.log(`setting version: ${version}`);
         document.title = `HRM Trainer Control ${version}`;
     }
 }
