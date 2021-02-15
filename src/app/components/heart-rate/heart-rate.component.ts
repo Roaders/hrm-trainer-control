@@ -2,8 +2,9 @@ import { Component } from '@angular/core';
 import { Subscription } from 'rxjs';
 
 import { NOT_FOUND_ERROR } from '../../constants';
-import { HeartRateResult } from '../../contracts';
+import { HeartRateResult, ProgressMessage } from '../../contracts';
 import { HeartRateDevice } from '../../devices/heart-rate.device';
+import { isProgressMessage } from '../../helpers';
 
 const connectButtonText = 'Connect HRM';
 
@@ -14,6 +15,13 @@ const connectButtonText = 'Connect HRM';
 })
 export class HeartRateComponent {
     constructor(private heartRateDevice: HeartRateDevice) {}
+
+    private _logOutput = '';
+
+    public get logOutput(): string {
+        return `[
+${this._logOutput}]`;
+    }
 
     private _warningMessage?: string;
 
@@ -71,7 +79,7 @@ export class HeartRateComponent {
         this._buttonEnabled = false;
         this._buttonText = 'Connecting...';
         this.subscription = this.heartRateDevice.connect().subscribe(
-            (result) => this.handleHeartRate(result),
+            (result) => this.handleUpdate(result),
             (error) => this.handleError(error, 'Error connecting to sensor'),
         );
     }
@@ -84,7 +92,14 @@ export class HeartRateComponent {
         this._heartRate = undefined;
     }
 
-    private handleHeartRate(result: HeartRateResult) {
+    private handleUpdate(result: HeartRateResult | ProgressMessage) {
+        this.log(isProgressMessage(result) ? result : { heartRate: result.heartRate });
+
+        if (isProgressMessage(result)) {
+            this._buttonText = result.message;
+            return;
+        }
+
         this.reset();
         this._buttonEnabled = false;
         this._buttonText = undefined;
@@ -100,5 +115,9 @@ export class HeartRateComponent {
         } else {
             this._errorMessage = `${message ? message + ': ' : ''}${error}`;
         }
+    }
+
+    private log(data: Record<string, string | number | boolean | undefined>) {
+        this._logOutput += `${JSON.stringify({ ...data, at: Date.now() })},\n`;
     }
 }

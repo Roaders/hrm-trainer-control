@@ -1,14 +1,16 @@
-import { from, interval, Observable } from 'rxjs';
+import { from, interval, merge, Observable, of } from 'rxjs';
 import { catchError, map, switchMap, take, tap } from 'rxjs/operators';
+
+import { ProgressMessage } from '../contracts';
 
 const retryCount = 5;
 
 export function requestDevice(
     services: [BluetoothServiceUUID, ...BluetoothServiceUUID[]],
     retries = 0,
-): Observable<BluetoothRemoteGATTServer> {
+): Observable<BluetoothRemoteGATTServer | ProgressMessage> {
     console.log(`requestDevice(${retries})...`, services);
-    return from(navigator.bluetooth.requestDevice({ filters: [{ services }] })).pipe(
+    const requestStream = from(navigator.bluetooth.requestDevice({ filters: [{ services }] })).pipe(
         tap((device) => console.log(`Device Selected:`, device.name)),
         map((device) => {
             if (device.gatt == null) {
@@ -25,6 +27,10 @@ export function requestDevice(
             }
         }),
     );
+
+    const progressMessage: ProgressMessage = { message: 'Requesting Device...', type: 'progressMessage' };
+
+    return merge(of(progressMessage), requestStream);
 }
 
 export function timeOutStream<T>(timeInMs: number): Observable<T> {
@@ -56,10 +62,13 @@ export function deviceDisconnectionStream(server: BluetoothRemoteGATTServer): Ob
     });
 }
 
-export function connectServer(server: BluetoothRemoteGATTServer, retries = 0): Observable<BluetoothRemoteGATTServer> {
+export function connectServer(
+    server: BluetoothRemoteGATTServer,
+    retries = 0,
+): Observable<BluetoothRemoteGATTServer | ProgressMessage> {
     console.log(`connectServer(${retries})...`);
 
-    return new Observable<BluetoothRemoteGATTServer>((observer) => {
+    return new Observable<BluetoothRemoteGATTServer | ProgressMessage>((observer) => {
         console.log(`Connecting to server...`);
         server.connect().then(
             () => {
@@ -68,6 +77,8 @@ export function connectServer(server: BluetoothRemoteGATTServer, retries = 0): O
             },
             (error) => observer.error(error),
         );
+
+        observer.next({ message: 'Connecting to Server...', type: 'progressMessage' });
 
         return {
             unsubscribe: () => {
@@ -95,10 +106,10 @@ export function getService(
     server: BluetoothRemoteGATTServer,
     service: BluetoothServiceUUID,
     retries = 0,
-): Observable<BluetoothRemoteGATTService> {
+): Observable<BluetoothRemoteGATTService | ProgressMessage> {
     console.log(`getService(${retries}) '${service}'...`, server);
 
-    return from(server.getPrimaryService(service)).pipe(
+    const getServiceStream = from(server.getPrimaryService(service)).pipe(
         tap(() => console.log(`Service returned`)),
         catchError((err) => {
             console.log(`Error getting service: '${service}'`, server, err);
@@ -113,6 +124,10 @@ export function getService(
             }
         }),
     );
+
+    const progressMessage: ProgressMessage = { message: 'Getting Service...', type: 'progressMessage' };
+
+    return merge(of(progressMessage), getServiceStream);
 }
 
 export function getNotifications(characteristic: BluetoothRemoteGATTCharacteristic): Observable<DataView> {

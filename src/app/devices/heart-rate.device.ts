@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { defer, merge, Observable } from 'rxjs';
+import { defer, merge, Observable, of } from 'rxjs';
 import { map, share, skipUntil, switchMap, takeUntil, tap } from 'rxjs/operators';
 
-import { HeartRateResult } from '../contracts';
-import { parseHeartRate } from '../helpers';
+import { HeartRateResult, ProgressMessage } from '../contracts';
+import { isProgressMessage, parseHeartRate } from '../helpers';
 import {
     connectServer,
     deviceDisconnectionStream,
@@ -18,11 +18,15 @@ export class HeartRateDevice {
     private server?: BluetoothRemoteGATTServer;
     private characteristic?: BluetoothRemoteGATTCharacteristic;
 
-    public connect(): Observable<HeartRateResult> {
+    public connect(): Observable<HeartRateResult | ProgressMessage> {
         return requestDevice(['heart_rate']).pipe(
             switchMap((server) => {
+                if (isProgressMessage(server)) {
+                    return of(server);
+                }
+
                 console.log(`DEVICE CONNECTED`);
-                const updatesStream: Observable<HeartRateResult> = this.subscribeToUpdates(server).pipe(
+                const updatesStream = this.subscribeToUpdates(server).pipe(
                     tap(() => console.log(`UPDATE`)),
                     share(),
                 );
@@ -60,19 +64,23 @@ export class HeartRateDevice {
         return true;
     }
 
-    private subscribeToUpdates(server: BluetoothRemoteGATTServer) {
+    private subscribeToUpdates(server: BluetoothRemoteGATTServer): Observable<HeartRateResult | ProgressMessage> {
         return defer(() => {
             console.log(`HeartRateDevice.subscribeToUpdates`);
             this.server = server;
 
             const updatesStream = connectServer(server).pipe(
-                switchMap((server) => getService(server, 'heart_rate')),
-                switchMap((service) => service.getCharacteristic('heart_rate_measurement')),
-                tap((characteristic) => {
-                    this.characteristic = characteristic;
+                switchMap((data) => (isProgressMessage(data) ? of(data) : getService(data, 'heart_rate'))),
+                switchMap((data) =>
+                    isProgressMessage(data) ? of(data) : data.getCharacteristic('heart_rate_measurement'),
+                ),
+                tap((data) => {
+                    if (!isProgressMessage(data)) {
+                        this.characteristic = data;
+                    }
                 }),
-                switchMap((characteristic) => getNotifications(characteristic)),
-                map(parseHeartRate),
+                switchMap((data) => (isProgressMessage(data) ? of(data) : getNotifications(data))),
+                map((data) => (isProgressMessage(data) ? data : parseHeartRate(data))),
                 share(),
             );
 

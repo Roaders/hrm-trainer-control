@@ -4,3 +4,8 @@ export type HeartRateResult = {
     energyExpended?: number;
     rrIntervals?: number[];
 };
+
+export type ProgressMessage = {
+    type: 'progressMessage';
+    message: string;
+};
