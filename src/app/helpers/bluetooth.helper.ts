@@ -1,4 +1,4 @@
-import { from, interval, merge, Observable, of } from 'rxjs';
+import { from, interval, Observable } from 'rxjs';
 import { catchError, map, switchMap, take, tap } from 'rxjs/operators';
 
 const retryCount = 5;

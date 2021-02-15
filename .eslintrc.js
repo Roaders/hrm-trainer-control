@@ -29,6 +29,8 @@ module.exports = {
             'error',
             { accessibility: 'explicit', overrides: { constructors: 'no-public' } },
         ],
+        'no-unused-vars': 'off',
+        '@typescript-eslint/no-unused-vars': ['error'],
     },
     overrides: [
         {
