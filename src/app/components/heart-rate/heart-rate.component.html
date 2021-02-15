@@ -1,4 +1,4 @@
-<div class="col-sm m-auto">
+<div class="d-flex flex-column h-100">
 
     <div *ngIf="warningMessage != null" class="alert alert-warning alert-dismissible mt-3">
         {{warningMessage}}
@@ -34,8 +34,8 @@
         </button>
     </div>
 
-    <div>
-        <textarea class="w-100" [value]="logOutput"></textarea>
+    <div class="flex-grow-1">
+        <textarea class="w-100 h-100" [value]="logOutput"></textarea>
     </div>
 
 </div>
