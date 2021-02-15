@@ -95,7 +95,7 @@ ${this._logOutput}]`;
         }
         this._buttonEnabled = false;
         this._buttonText = 'Connecting...';
-        this.heartRateDevice.connect().subscribe(
+        this.subscription = this.heartRateDevice.connect().subscribe(
             (result) => this.handleUpdate(result),
             (error) => this.handleError(error, 'Error connecting to sensor'),
         );
