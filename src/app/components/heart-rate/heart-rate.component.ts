@@ -14,6 +14,8 @@ const connectButtonText = 'Connect HRM';
     styleUrls: ['./heart-rate.component.scss'],
 })
 export class HeartRateComponent {
+    private wakeLockSentinel: WakeLockSentinel | undefined;
+
     constructor(private heartRateDevice: HeartRateDevice) {}
 
     private _logOutput = '';
@@ -66,6 +68,12 @@ ${this._logOutput}]`;
             this.subscription.unsubscribe();
             this.subscription = undefined;
         }
+
+        if (this.wakeLockSentinel) {
+            this.wakeLockSentinel.release();
+            this.wakeLockSentinel = undefined;
+        }
+
         await this.heartRateDevice.disconnect();
     }
 
@@ -93,6 +101,15 @@ ${this._logOutput}]`;
     }
 
     private handleUpdate(result: HeartRateResult | ProgressMessage) {
+        try {
+            navigator.wakeLock.request('screen').then((sentinel) => {
+                this.log({ message: 'Wakelog obtained' });
+                this.wakeLockSentinel = sentinel;
+            });
+        } catch (err) {
+            this._warningMessage = `Could not obtain wakelock: ${err}`;
+        }
+
         this.log(isProgressMessage(result) ? result : { heartRate: result.heartRate });
 
         if (isProgressMessage(result)) {
