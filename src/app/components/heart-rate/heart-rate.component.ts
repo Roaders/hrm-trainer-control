@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { share } from 'rxjs/operators';
 
 import { NOT_FOUND_ERROR } from '../../constants';
 import { HeartRateResult, ProgressMessage } from '../../contracts';
@@ -84,9 +85,18 @@ ${this._logOutput}]`;
 
     public connectSensor(): void {
         this.reset();
+
+        try {
+            navigator.wakeLock.request('screen').then((sentinel) => {
+                this.log({ message: 'Wakelog obtained' });
+                this.wakeLockSentinel = sentinel;
+            });
+        } catch (err) {
+            this._warningMessage = `Could not obtain wakelock: ${err}`;
+        }
         this._buttonEnabled = false;
         this._buttonText = 'Connecting...';
-        this.subscription = this.heartRateDevice.connect().subscribe(
+        this.heartRateDevice.connect().subscribe(
             (result) => this.handleUpdate(result),
             (error) => this.handleError(error, 'Error connecting to sensor'),
         );
@@ -101,15 +111,6 @@ ${this._logOutput}]`;
     }
 
     private handleUpdate(result: HeartRateResult | ProgressMessage) {
-        try {
-            navigator.wakeLock.request('screen').then((sentinel) => {
-                this.log({ message: 'Wakelog obtained' });
-                this.wakeLockSentinel = sentinel;
-            });
-        } catch (err) {
-            this._warningMessage = `Could not obtain wakelock: ${err}`;
-        }
-
         this.log(isProgressMessage(result) ? result : { heartRate: result.heartRate });
 
         if (isProgressMessage(result)) {
