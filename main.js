@@ -362,6 +362,10 @@ ${this._logOutput}]`;
                 this.subscription.unsubscribe();
                 this.subscription = undefined;
             }
+            if (this.wakeLockSentinel) {
+                this.wakeLockSentinel.release();
+                this.wakeLockSentinel = undefined;
+            }
             yield this.heartRateDevice.disconnect();
         });
     }
@@ -383,6 +387,15 @@ ${this._logOutput}]`;
         this._heartRate = undefined;
     }
     handleUpdate(result) {
+        try {
+            navigator.wakeLock.request('screen').then((sentinel) => {
+                this.log({ message: 'Wakelog obtained' });
+                this.wakeLockSentinel = sentinel;
+            });
+        }
+        catch (err) {
+            this._warningMessage = `Could not obtain wakelock: ${err}`;
+        }
         this.log(Object(_helpers__WEBPACK_IMPORTED_MODULE_2__["isProgressMessage"])(result) ? result : { heartRate: result.heartRate });
         if (Object(_helpers__WEBPACK_IMPORTED_MODULE_2__["isProgressMessage"])(result)) {
             this._buttonText = result.message;
