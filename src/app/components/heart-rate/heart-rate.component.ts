@@ -47,6 +47,10 @@ export class HeartRateComponent {
 
     private subscription?: Subscription;
 
+    public get canDisconnect(): boolean {
+        return this.subscription != null;
+    }
+
     public async disconnect(): Promise<void> {
         this.reset();
 
@@ -89,7 +93,8 @@ export class HeartRateComponent {
     }
 
     private handleError(error: unknown, message?: string) {
-        this.reset();
+        this.disconnect();
+
         if (error instanceof DOMException && error.name === NOT_FOUND_ERROR) {
             this._warningMessage = `No Device Selected`;
         } else {

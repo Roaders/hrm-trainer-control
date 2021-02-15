@@ -28,6 +28,10 @@
         <div>
             <i class="bi-heart-fill"></i>
         </div>
+
+        <button *ngIf="canDisconnect" type="button" class="close close-button" aria-label="Close" (click)="disconnect()">
+            <span aria-hidden="true">&times;</span>
+        </button>
     </div>
 
 </div>

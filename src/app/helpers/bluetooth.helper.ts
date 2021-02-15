@@ -38,8 +38,8 @@ export function timeOutStream<T>(timeInMs: number): Observable<T> {
     );
 }
 
-export function handleDeviceDisconnection(server: BluetoothRemoteGATTServer): Observable<BluetoothRemoteGATTServer> {
-    const disconnectionStream = new Observable<BluetoothRemoteGATTServer>((observer) => {
+export function deviceDisconnectionStream(server: BluetoothRemoteGATTServer): Observable<BluetoothRemoteGATTServer> {
+    return new Observable<BluetoothRemoteGATTServer>((observer) => {
         function handleEvent(event: Event) {
             console.log(`Gatt server disconnected`, event);
             observer.next(server);
@@ -53,9 +53,7 @@ export function handleDeviceDisconnection(server: BluetoothRemoteGATTServer): Ob
                 server.device.removeEventListener('gattserverdisconnected', handleEvent);
             },
         };
-    }).pipe(switchMap(() => connectServer(server)));
-
-    return merge(of(server), disconnectionStream);
+    });
 }
 
 export function connectServer(server: BluetoothRemoteGATTServer, retries = 0): Observable<BluetoothRemoteGATTServer> {
@@ -74,10 +72,10 @@ export function connectServer(server: BluetoothRemoteGATTServer, retries = 0): O
         return {
             unsubscribe: () => {
                 if (server.connected) {
-                    console.log(`Disconnecting from server...`, server);
+                    console.log(`connectServer.unsubscribe: Disconnecting from server...`, server);
                     server.disconnect();
                 } else {
-                    console.log(`Server already disconnected`, server);
+                    console.log(`connectServer.unsubscribe: Server already disconnected`, server);
                 }
             },
         };
