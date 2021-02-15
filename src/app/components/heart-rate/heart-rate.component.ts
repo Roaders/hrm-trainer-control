@@ -85,6 +85,7 @@ ${this._logOutput}]`;
     public connectSensor(): void {
         this.reset();
 
+        // TODO: add to other subscription, move to helper, re-request on cancelled
         try {
             navigator.wakeLock.request('screen').then((sentinel) => {
                 this.log({ message: 'Wakelog obtained' });
@@ -93,6 +94,7 @@ ${this._logOutput}]`;
         } catch (err) {
             this._warningMessage = `Could not obtain wakelock: ${err}`;
         }
+
         this._buttonEnabled = false;
         this._buttonText = 'Connecting...';
         this.subscription = this.heartRateDevice.connect().subscribe(
