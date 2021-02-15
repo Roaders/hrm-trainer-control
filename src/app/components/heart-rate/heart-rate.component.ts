@@ -118,6 +118,6 @@ ${this._logOutput}]`;
     }
 
     private log(data: Record<string, string | number | boolean | undefined>) {
-        this._logOutput += `${JSON.stringify({ ...data, at: Date.now() })},\n`;
+        this._logOutput = `${JSON.stringify({ ...data, at: Date.now() })},\n${this._logOutput}`;
     }
 }
