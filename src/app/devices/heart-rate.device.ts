@@ -14,13 +14,16 @@ import {
     timeOutStream,
 } from '../helpers';
 
+const serviceUUID = 'heart_rate';
+const characteristicUUID = 'cycling_power_measurement';
+
 @Injectable()
 export class HeartRateDevice {
     private server?: BluetoothRemoteGATTServer;
     private characteristic?: BluetoothRemoteGATTCharacteristic;
 
     public connect(): Observable<HeartRateResult | ProgressMessage> {
-        return requestDevice(['heart_rate']).pipe(
+        return requestDevice([serviceUUID]).pipe(
             switchMap((server) => {
                 if (isProgressMessage(server)) {
                     return of(server);
@@ -69,8 +72,8 @@ export class HeartRateDevice {
             this.server = server;
 
             const updatesStream: Observable<HeartRateResult | ProgressMessage> = connectServer(server).pipe(
-                switchMap((v) => (isProgressMessage(v) ? of(v) : getService(v, 'heart_rate'))),
-                switchMap((v) => (isProgressMessage(v) ? of(v) : v.getCharacteristic('heart_rate_measurement'))),
+                switchMap((v) => (isProgressMessage(v) ? of(v) : getService(v, serviceUUID))),
+                switchMap((v) => (isProgressMessage(v) ? of(v) : v.getCharacteristic(characteristicUUID))),
                 tap((v) => {
                     if (!isProgressMessage(v)) {
                         this.characteristic = v;
