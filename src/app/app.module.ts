@@ -5,12 +5,13 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './components/app/app.component';
 import { HeartRateComponent } from './components/heart-rate/heart-rate.component';
 import { TrainerComponent } from './components/trainer/trainer.component';
+import { TrainerDevice } from './devices';
 import { HeartRateDevice } from './devices/heart-rate.device';
 
 @NgModule({
     declarations: [AppComponent, HeartRateComponent, TrainerComponent],
     imports: [BrowserModule, AppRoutingModule],
-    providers: [HeartRateDevice],
+    providers: [HeartRateDevice, TrainerDevice],
     bootstrap: [AppComponent],
 })
 export class AppModule {}

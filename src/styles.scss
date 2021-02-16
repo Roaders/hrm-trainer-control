@@ -1,4 +1,30 @@
 /* You can add global styles to this file, and also import other style files */
 
-@import "../node_modules/bootstrap-icons/font/bootstrap-icons.css"
+@import "../node_modules/bootstrap-icons/font/bootstrap-icons.css";
 
+.button-overlay{
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+}
+
+.close-button{
+    top: 0;
+    right: 0;
+    position: absolute;
+}
+
+.center-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn {
+    &.disabled,
+    &:disabled {
+        opacity: 1;
+    }
+}
