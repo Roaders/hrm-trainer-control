@@ -14,8 +14,8 @@ import {
 } from '../helpers';
 import { parseTrainerData } from '../helpers/trainer.helper';
 
-const serviceUUID = 'fitness_machine';
-const characteristicUUID = 'indoor_bike_data';
+const serviceUUID = 'A026EE07-0A7D-4AB3-97FAF1500F9FEB8B'; // wahoo equipment service
+const characteristicUUID = 'A026E01E-0A7D-4AB3-97FAF1500F9FEB8B'; // wahoo equipment state
 
 @Injectable()
 export class TrainerDevice {
