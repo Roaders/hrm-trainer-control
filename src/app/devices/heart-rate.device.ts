@@ -1,17 +1,18 @@
 import { Injectable } from '@angular/core';
 import { defer, merge, Observable, of } from 'rxjs';
-import { map, share, skipUntil, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { filter, map, share, skipUntil, switchMap, takeUntil, tap } from 'rxjs/operators';
 
 import { HeartRateResult, ProgressMessage } from '../contracts';
-import { isProgressMessage, parseHeartRate } from '../helpers';
 import {
     connectServer,
     deviceDisconnectionStream,
     getNotifications,
     getService,
+    isProgressMessage,
+    parseHeartRate,
     requestDevice,
     timeOutStream,
-} from '../helpers/bluetooth.helper';
+} from '../helpers';
 
 @Injectable()
 export class HeartRateDevice {
@@ -26,19 +27,17 @@ export class HeartRateDevice {
                 }
 
                 console.log(`DEVICE CONNECTED`);
-                const updatesStream = this.subscribeToUpdates(server).pipe(
-                    tap(() => console.log(`UPDATE`)),
-                    share(),
-                );
+                const updatesStream = this.subscribeToUpdates(server).pipe(share());
 
-                const reconnectionStream = deviceDisconnectionStream(server).pipe(
-                    skipUntil(updatesStream),
+                const deviceDisconnection = deviceDisconnectionStream(server).pipe(share());
+
+                const reconnectionStream = deviceDisconnection.pipe(
+                    skipUntil(updatesStream.pipe(filter((v) => !isProgressMessage(v)))),
                     tap(() => console.log(`DEVICE DISCONNECTED`)),
                     switchMap(() => this.subscribeToUpdates(server)),
-                    share(),
                 );
 
-                return merge(updatesStream.pipe(takeUntil(reconnectionStream)), reconnectionStream);
+                return merge(updatesStream.pipe(takeUntil(deviceDisconnection)), reconnectionStream);
             }),
         );
     }
@@ -69,22 +68,25 @@ export class HeartRateDevice {
             console.log(`HeartRateDevice.subscribeToUpdates`);
             this.server = server;
 
-            const updatesStream = connectServer(server).pipe(
-                switchMap((data) => (isProgressMessage(data) ? of(data) : getService(data, 'heart_rate'))),
-                switchMap((data) =>
-                    isProgressMessage(data) ? of(data) : data.getCharacteristic('heart_rate_measurement'),
-                ),
-                tap((data) => {
-                    if (!isProgressMessage(data)) {
-                        this.characteristic = data;
+            const updatesStream: Observable<HeartRateResult | ProgressMessage> = connectServer(server).pipe(
+                switchMap((v) => (isProgressMessage(v) ? of(v) : getService(v, 'heart_rate'))),
+                switchMap((v) => (isProgressMessage(v) ? of(v) : v.getCharacteristic('heart_rate_measurement'))),
+                tap((v) => {
+                    if (!isProgressMessage(v)) {
+                        this.characteristic = v;
                     }
                 }),
-                switchMap((data) => (isProgressMessage(data) ? of(data) : getNotifications(data))),
-                map((data) => (isProgressMessage(data) ? data : parseHeartRate(data))),
+                switchMap((v) => (isProgressMessage(v) ? of(v) : getNotifications(v))),
+                map((v) => (isProgressMessage(v) ? v : parseHeartRate(v))),
                 share(),
             );
 
-            return merge(timeOutStream<HeartRateResult>(60000).pipe(takeUntil(updatesStream)), updatesStream);
+            return merge(
+                updatesStream,
+                timeOutStream<HeartRateResult>(60000).pipe(
+                    takeUntil(updatesStream.pipe(filter((v) => !isProgressMessage(v)))),
+                ),
+            );
         });
     }
 }

@@ -1,1 +1,1 @@
-export * from './bluetooth-device.factory';
+export * from './heart-rate.device';

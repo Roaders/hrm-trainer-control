@@ -16,7 +16,7 @@ module.exports = {
         ecmaVersion: 11,
         sourceType: 'module',
     },
-    plugins: ['@typescript-eslint', 'simple-import-sort'],
+    plugins: ['@typescript-eslint', 'simple-import-sort', 'import'],
     ignorePatterns: ['dist/'],
     rules: {
         'prettier/prettier': [
@@ -31,6 +31,8 @@ module.exports = {
         ],
         'no-unused-vars': 'off',
         '@typescript-eslint/no-unused-vars': ['error'],
+        'import/newline-after-import': 'error',
+        'import/no-duplicates': 'error',
     },
     overrides: [
         {
