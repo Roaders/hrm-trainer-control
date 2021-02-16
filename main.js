@@ -282,7 +282,7 @@ AppComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineCompo
     } if (rf & 2) {
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵadvance"](1);
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtextInterpolate"](ctx.version);
-    } }, directives: [_heart_rate_heart_rate_component__WEBPACK_IMPORTED_MODULE_2__["HeartRateComponent"], _trainer_trainer_component__WEBPACK_IMPORTED_MODULE_3__["TrainerComponent"]], styles: [".version-display[_ngcontent-%COMP%] {\n  position: absolute;\n  right: 0.5rem;\n  top: 0.5rem;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uLy4uL2FwcC5jb21wb25lbnQuc2NzcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFDQTtFQUNJLGtCQUFBO0VBQ0EsYUFBQTtFQUNBLFdBQUE7QUFBSiIsImZpbGUiOiJhcHAuY29tcG9uZW50LnNjc3MiLCJzb3VyY2VzQ29udGVudCI6WyJcbi52ZXJzaW9uLWRpc3BsYXl7XG4gICAgcG9zaXRpb246IGFic29sdXRlO1xuICAgIHJpZ2h0OiAwLjVyZW07XG4gICAgdG9wOiAwLjVyZW07XG59XG4iXX0= */"] });
+    } }, directives: [_heart_rate_heart_rate_component__WEBPACK_IMPORTED_MODULE_2__["HeartRateComponent"], _trainer_trainer_component__WEBPACK_IMPORTED_MODULE_3__["TrainerComponent"]], styles: [".version-display[_ngcontent-%COMP%] {\n  position: absolute;\n  right: 0.5rem;\n  top: 1.5rem;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uLy4uL2FwcC5jb21wb25lbnQuc2NzcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFDQTtFQUNJLGtCQUFBO0VBQ0EsYUFBQTtFQUNBLFdBQUE7QUFBSiIsImZpbGUiOiJhcHAuY29tcG9uZW50LnNjc3MiLCJzb3VyY2VzQ29udGVudCI6WyJcbi52ZXJzaW9uLWRpc3BsYXl7XG4gICAgcG9zaXRpb246IGFic29sdXRlO1xuICAgIHJpZ2h0OiAwLjVyZW07XG4gICAgdG9wOiAxLjVyZW07XG59XG4iXX0= */"] });
 
 
 /***/ }),
