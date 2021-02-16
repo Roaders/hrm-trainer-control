@@ -14,8 +14,8 @@ import {
 } from '../helpers';
 import { parseTrainerData } from '../helpers/trainer.helper';
 
-const serviceUUID = 'cycling_power';
-const characteristicUUID = 'cycling_power_measurement';
+const serviceUUID = 'fitness_machine';
+const characteristicUUID = 'indoor_bike_data';
 
 @Injectable()
 export class TrainerDevice {
