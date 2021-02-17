@@ -18,13 +18,6 @@ export class HeartRateComponent {
 
     constructor(private heartRateDevice: HeartRateDevice) {}
 
-    private _logOutput = '';
-
-    public get logOutput(): string {
-        return `[
-${this._logOutput}]`;
-    }
-
     private _warningMessage?: string;
 
     public get warningMessage(): string | undefined {
@@ -92,7 +85,7 @@ ${this._logOutput}]`;
             (error) => this.handleError(error, 'Error connecting to sensor'),
         );
 
-        const wakeLockSubscription = maintainWakeLock().subscribe((result) => this.handleUpdate(result));
+        const wakeLockSubscription = maintainWakeLock().subscribe();
         this.subscription.add(wakeLockSubscription);
     }
 
@@ -104,13 +97,7 @@ ${this._logOutput}]`;
         this._heartRate = undefined;
     }
 
-    private handleUpdate(result: HeartRateResult | ProgressMessage) {
-        this.log(isProgressMessage(result) ? result : { heartRate: result.heartRate });
-
-        if (isProgressMessage(result)) {
-            return;
-        }
-
+    private handleUpdate(result: HeartRateResult) {
         this.reset();
         this._buttonEnabled = false;
         this._buttonText = undefined;
@@ -126,9 +113,5 @@ ${this._logOutput}]`;
         } else {
             this._errorMessage = `${message ? message + ': ' : ''}${error}`;
         }
-    }
-
-    private log(data: Record<string, string | number | boolean | undefined>) {
-        this._logOutput = `${JSON.stringify({ ...data, at: Date.now() })},\n${this._logOutput}`;
     }
 }
