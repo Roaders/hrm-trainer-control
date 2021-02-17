@@ -109,6 +109,7 @@ ${this._logOutput}]`;
 
         if (isProgressMessage(result)) {
             if (updateButton) {
+                this._heartRate = undefined;
                 this._buttonText = result.message;
             }
             return;

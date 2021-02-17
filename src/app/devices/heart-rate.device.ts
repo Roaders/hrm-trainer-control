@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { defer, merge, Observable, of } from 'rxjs';
-import { filter, map, share, skipUntil, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { defer, from, merge, Observable, of } from 'rxjs';
+import { filter, map, mergeMap, share, skipUntil, switchMap, takeUntil, tap } from 'rxjs/operators';
 
 import { HeartRateResult, ProgressMessage } from '../contracts';
 import {
@@ -8,6 +8,7 @@ import {
     deviceDisconnectionStream,
     getNotifications,
     getService,
+    handleProgress,
     HEART_RATE_CHARACTERISTIC,
     HEART_RATE_SERVICE,
     isProgressMessage,
@@ -23,24 +24,18 @@ export class HeartRateDevice {
 
     public connect(): Observable<HeartRateResult | ProgressMessage> {
         return requestDevice([HEART_RATE_SERVICE]).pipe(
-            switchMap((server) => {
-                if (isProgressMessage(server)) {
-                    return of(server);
-                }
+            mergeMap(
+                handleProgress((device) => {
+                    const updatesStream = this.subscribeToUpdates(device).pipe(share());
 
-                console.log(`DEVICE CONNECTED`);
-                const updatesStream = this.subscribeToUpdates(server).pipe(share());
-
-                const deviceDisconnection = deviceDisconnectionStream(server).pipe(share());
-
-                const reconnectionStream = deviceDisconnection.pipe(
-                    skipUntil(updatesStream.pipe(filter((v) => !isProgressMessage(v)))),
-                    tap(() => console.log(`DEVICE DISCONNECTED`)),
-                    switchMap(() => this.subscribeToUpdates(server)),
-                );
-
-                return merge(updatesStream.pipe(takeUntil(deviceDisconnection)), reconnectionStream);
-            }),
+                    return merge(
+                        updatesStream,
+                        timeOutStream<HeartRateResult>(60000).pipe(
+                            takeUntil(updatesStream.pipe(filter((v) => !isProgressMessage(v)))),
+                        ),
+                    );
+                }),
+            ),
         );
     }
 
@@ -65,30 +60,18 @@ export class HeartRateDevice {
         return true;
     }
 
-    private subscribeToUpdates(server: BluetoothRemoteGATTServer): Observable<HeartRateResult | ProgressMessage> {
-        return defer(() => {
-            console.log(`HeartRateDevice.subscribeToUpdates`);
-            this.server = server;
-
-            const updatesStream: Observable<HeartRateResult | ProgressMessage> = connectServer(server).pipe(
-                switchMap((v) => (isProgressMessage(v) ? of(v) : getService(v, HEART_RATE_SERVICE))),
-                switchMap((v) => (isProgressMessage(v) ? of(v) : v.getCharacteristic(HEART_RATE_CHARACTERISTIC))),
-                tap((v) => {
-                    if (!isProgressMessage(v)) {
-                        this.characteristic = v;
-                    }
-                }),
-                switchMap((v) => (isProgressMessage(v) ? of(v) : getNotifications(v))),
-                map((v) => (isProgressMessage(v) ? v : parseHeartRate(v))),
-                share(),
-            );
-
-            return merge(
-                updatesStream,
-                timeOutStream<HeartRateResult>(60000).pipe(
-                    takeUntil(updatesStream.pipe(filter((v) => !isProgressMessage(v)))),
-                ),
-            );
-        });
+    private subscribeToUpdates(device: BluetoothDevice) {
+        return merge(of(device), deviceDisconnectionStream(device)).pipe(
+            switchMap(handleProgress((device) => connectServer(device))),
+            switchMap(handleProgress((server) => getService(server, HEART_RATE_SERVICE))),
+            switchMap(handleProgress((service) => from(service.getCharacteristic(HEART_RATE_CHARACTERISTIC)))),
+            tap((value) => {
+                if (!isProgressMessage(value)) {
+                    this.characteristic = value;
+                }
+            }),
+            switchMap(handleProgress((characteristic) => getNotifications(characteristic))),
+            map((data) => (isProgressMessage(data) ? data : parseHeartRate(data))),
+        );
     }
 }

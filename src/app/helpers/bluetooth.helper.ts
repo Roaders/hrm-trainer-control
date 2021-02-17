@@ -10,16 +10,10 @@ const retryCount = 5;
 export function requestDevice(
     services: [BluetoothServiceUUID, ...BluetoothServiceUUID[]],
     retries = 0,
-): Observable<BluetoothRemoteGATTServer | ProgressMessage> {
+): Observable<BluetoothDevice | ProgressMessage> {
     console.log(`requestDevice(${retries})...`, services);
     const requestStream = from(navigator.bluetooth.requestDevice({ filters: [{ services }] })).pipe(
         tap((device) => console.log(`Device Selected:`, device.name)),
-        map((device) => {
-            if (device.gatt == null) {
-                throw new Error(`gatt is not defined on device`);
-            }
-            return device.gatt;
-        }),
         catchError((err) => {
             console.log(`Error selecting device`, err);
             if (retries >= retryCount || err.name === 'NotFoundError') {
@@ -33,40 +27,17 @@ export function requestDevice(
     return merge(of(createProgress('Requesting Device...')), requestStream);
 }
 
-export function timeOutStream<T>(timeInMs: number): Observable<T> {
-    console.log(`Starting timeout...`, timeInMs);
-
-    return interval(timeInMs).pipe(
-        take(1),
-        map(() => {
-            throw new Error(`Timeout waiting for device connection.`);
-        }),
-    );
-}
-
-export function deviceDisconnectionStream(server: BluetoothRemoteGATTServer): Observable<BluetoothRemoteGATTServer> {
-    return new Observable<BluetoothRemoteGATTServer>((observer) => {
-        function handleEvent(event: Event) {
-            console.log(`Gatt server disconnected`, event);
-            observer.next(server);
-        }
-        console.log(`Add event listener: gattserverdisconnected`);
-        server.device.addEventListener('gattserverdisconnected', handleEvent);
-
-        return {
-            unsubscribe: () => {
-                console.log(`Remove Event Listener: gattserverdisconnected`);
-                server.device.removeEventListener('gattserverdisconnected', handleEvent);
-            },
-        };
-    });
-}
-
 export function connectServer(
-    server: BluetoothRemoteGATTServer,
+    device: BluetoothDevice,
     retries = 0,
 ): Observable<BluetoothRemoteGATTServer | ProgressMessage> {
     console.log(`connectServer(${retries})...`);
+
+    if (device.gatt == null) {
+        throw new Error(`gatt is not defined on device`);
+    }
+
+    const server = device.gatt;
 
     return new Observable<BluetoothRemoteGATTServer | ProgressMessage>((observer) => {
         let unsubscribed = false;
@@ -99,7 +70,7 @@ export function connectServer(
         catchError((err) => {
             console.log(`Error connecting to server`, err);
             if (retries < retryCount) {
-                return connectServer(server, retries + 1);
+                return connectServer(device, retries + 1);
             } else {
                 throw err;
             }
@@ -119,7 +90,7 @@ export function getService(
         catchError((err) => {
             console.log(`Error getting service: '${service}' (${retries})`, server, err);
             if (!server.connected) {
-                return connectServer(server, retries + 1).pipe(
+                return connectServer(server.device, retries + 1).pipe(
                     switchMap((v) => (isProgressMessage(v) ? of(v) : getService(server, service, retries + 1))),
                 );
             } else if (retries < 3) {
@@ -151,4 +122,46 @@ export function getNotifications(characteristic: BluetoothRemoteGATTCharacterist
             },
         };
     });
+}
+
+export function timeOutStream<T>(timeInMs: number): Observable<T> {
+    console.log(`Starting timeout...`, timeInMs);
+
+    return interval(timeInMs).pipe(
+        take(1),
+        map(() => {
+            throw new Error(`Timeout waiting for device connection.`);
+        }),
+    );
+}
+
+export function deviceDisconnectionStream(device: BluetoothDevice): Observable<BluetoothDevice | ProgressMessage> {
+    return new Observable<BluetoothDevice | ProgressMessage>((observer) => {
+        function handleEvent() {
+            console.log(`DEVICE DISCONNECTED`);
+            observer.next(createProgress('Device disconnected.'));
+            observer.next(device);
+        }
+        console.log(`Add event listener: gattserverdisconnected`);
+        device.addEventListener('gattserverdisconnected', handleEvent);
+
+        return {
+            unsubscribe: () => {
+                console.log(`Remove Event Listener: gattserverdisconnected`);
+                device.removeEventListener('gattserverdisconnected', handleEvent);
+            },
+        };
+    });
+}
+
+export function handleProgress<T, R>(
+    func: (value: T) => Observable<R>,
+): (value: T | ProgressMessage) => Observable<R | ProgressMessage> {
+    return (value: T | ProgressMessage) => {
+        if (isProgressMessage(value)) {
+            return of(value);
+        }
+
+        return func(value);
+    };
 }
