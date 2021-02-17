@@ -3,17 +3,7 @@ import { from, merge, Observable, of } from 'rxjs';
 import { filter, map, mergeMap, share, switchMap, takeUntil, tap } from 'rxjs/operators';
 
 import { HeartRateResult } from '../contracts';
-import {
-    connectServer,
-    deviceDisconnectionStream,
-    getNotifications,
-    getService,
-    HEART_RATE_CHARACTERISTIC,
-    HEART_RATE_SERVICE,
-    parseHeartRate,
-    requestDevice,
-    timeOutStream,
-} from '../helpers';
+import { BluetoothHelper, HEART_RATE_CHARACTERISTIC, HEART_RATE_SERVICE, parseHeartRate } from '../helpers';
 import { createProgress } from '../helpers/messages.helper';
 
 @Injectable()
@@ -21,12 +11,17 @@ export class HeartRateDevice {
     private server?: BluetoothRemoteGATTServer;
     private characteristic?: BluetoothRemoteGATTCharacteristic;
 
+    constructor(private helper: BluetoothHelper) {}
+
     public connect(connectionRetries = 5): Observable<HeartRateResult> {
-        return requestDevice([HEART_RATE_SERVICE]).pipe(
+        return this.helper.requestDevice([HEART_RATE_SERVICE]).pipe(
             mergeMap((device) => {
                 const updatesStream = this.subscribeToUpdates(device, connectionRetries).pipe(share());
 
-                return merge(updatesStream, timeOutStream<HeartRateResult>(60000).pipe(takeUntil(updatesStream)));
+                return merge(
+                    updatesStream,
+                    this.helper.createTimeOutStream<HeartRateResult>(60000).pipe(takeUntil(updatesStream)),
+                );
             }),
         );
     }
@@ -53,13 +48,13 @@ export class HeartRateDevice {
     private subscribeToUpdates(device: BluetoothDevice, connectionRetries: number): Observable<HeartRateResult> {
         let retries = 0;
 
-        return merge(of(device), deviceDisconnectionStream(device)).pipe(
+        return merge(of(device), this.helper.createDeviceDisconnectionStream(device)).pipe(
             filter(() => retries++ < connectionRetries),
-            switchMap((device) => connectServer(device)),
-            switchMap((server) => getService(server, HEART_RATE_SERVICE)),
+            switchMap((device) => this.helper.connectServer(device)),
+            switchMap((server) => this.helper.getService(server, HEART_RATE_SERVICE)),
             switchMap((service) => from(service.getCharacteristic(HEART_RATE_CHARACTERISTIC))),
             tap((value) => (this.characteristic = value)),
-            switchMap((characteristic) => getNotifications(characteristic)),
+            switchMap((characteristic) => this.helper.getNotifications(characteristic)),
             tap(() => (retries = 0)),
             map((data) => parseHeartRate(data)),
         );
