@@ -12,7 +12,9 @@ export function requestDevice(
     retries = 0,
 ): Observable<BluetoothRemoteGATTServer | ProgressMessage> {
     console.log(`requestDevice(${retries})...`, services);
-    const requestStream = from(navigator.bluetooth.requestDevice({ filters: [{ services }] })).pipe(
+    const requestStream = from(
+        navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: services }),
+    ).pipe(
         tap((device) => console.log(`Device Selected:`, device.name)),
         map((device) => {
             if (device.gatt == null) {
@@ -31,35 +33,6 @@ export function requestDevice(
     );
 
     return merge(of(createProgress('Requesting Device...')), requestStream);
-}
-
-export function timeOutStream<T>(timeInMs: number): Observable<T> {
-    console.log(`Starting timeout...`, timeInMs);
-
-    return interval(timeInMs).pipe(
-        take(1),
-        map(() => {
-            throw new Error(`Timeout waiting for device connection.`);
-        }),
-    );
-}
-
-export function deviceDisconnectionStream(server: BluetoothRemoteGATTServer): Observable<BluetoothRemoteGATTServer> {
-    return new Observable<BluetoothRemoteGATTServer>((observer) => {
-        function handleEvent(event: Event) {
-            console.log(`Gatt server disconnected`, event);
-            observer.next(server);
-        }
-        console.log(`Add event listener: gattserverdisconnected`);
-        server.device.addEventListener('gattserverdisconnected', handleEvent);
-
-        return {
-            unsubscribe: () => {
-                console.log(`Remove Event Listener: gattserverdisconnected`);
-                server.device.removeEventListener('gattserverdisconnected', handleEvent);
-            },
-        };
-    });
 }
 
 export function connectServer(
@@ -148,6 +121,35 @@ export function getNotifications(characteristic: BluetoothRemoteGATTCharacterist
         return {
             unsubscribe: () => {
                 characteristic.removeEventListener('characteristicvaluechanged', handleEvent);
+            },
+        };
+    });
+}
+
+export function timeOutStream<T>(timeInMs: number): Observable<T> {
+    console.log(`Starting timeout...`, timeInMs);
+
+    return interval(timeInMs).pipe(
+        take(1),
+        map(() => {
+            throw new Error(`Timeout waiting for device connection.`);
+        }),
+    );
+}
+
+export function deviceDisconnectionStream(server: BluetoothRemoteGATTServer): Observable<BluetoothRemoteGATTServer> {
+    return new Observable<BluetoothRemoteGATTServer>((observer) => {
+        function handleEvent(event: Event) {
+            console.log(`Gatt server disconnected`, event);
+            observer.next(server);
+        }
+        console.log(`Add event listener: gattserverdisconnected`);
+        server.device.addEventListener('gattserverdisconnected', handleEvent);
+
+        return {
+            unsubscribe: () => {
+                console.log(`Remove Event Listener: gattserverdisconnected`);
+                server.device.removeEventListener('gattserverdisconnected', handleEvent);
             },
         };
     });

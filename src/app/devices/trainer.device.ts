@@ -1,21 +1,26 @@
 import { Injectable } from '@angular/core';
-import { defer, merge, Observable, of } from 'rxjs';
-import { filter, map, share, skipUntil, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { defer, EMPTY, merge, Observable, of } from 'rxjs';
+import { filter, mergeMap, share, skipUntil, switchMap, takeUntil, tap } from 'rxjs/operators';
 
 import { ProgressMessage, TrainerResult } from '../contracts';
 import {
     connectServer,
     deviceDisconnectionStream,
-    getNotifications,
     getService,
     isProgressMessage,
     requestDevice,
     timeOutStream,
 } from '../helpers';
-import { parseTrainerData } from '../helpers/trainer.helper';
 
-const serviceUUID = 'A026EE07-0A7D-4AB3-97FAF1500F9FEB8B'; // wahoo equipment service
-const characteristicUUID = 'A026E01E-0A7D-4AB3-97FAF1500F9FEB8B'; // wahoo equipment state
+// const serviceUUID = 'a026ee07-0a7d-4ab3-97fa-f1500f9feb8b'; // wahoo equipment service
+// const characteristicUUID = 'a026e01e-0a7d-4ab3-97faf1500f9feb8b'; // wahoo equipment state
+
+const services: [BluetoothServiceUUID, ...BluetoothServiceUUID[]] = [
+    `a026ee01-0a7d-4ab3-97fa-f1500f9feb8b`,
+    `a026ee03-0a7d-4ab3-97fa-f1500f9feb8b`,
+    `a026ee0b-0a7d-4ab3-97fa-f1500f9feb8b`,
+    `a026ee06-0a7d-4ab3-97fa-f1500f9feb8b`,
+];
 
 @Injectable()
 export class TrainerDevice {
@@ -23,7 +28,7 @@ export class TrainerDevice {
     private characteristic?: BluetoothRemoteGATTCharacteristic;
 
     public connect(): Observable<TrainerResult | ProgressMessage> {
-        return requestDevice([serviceUUID]).pipe(
+        return requestDevice(services).pipe(
             switchMap((server) => {
                 if (isProgressMessage(server)) {
                     return of(server);
@@ -72,15 +77,27 @@ export class TrainerDevice {
             this.server = server;
 
             const updatesStream: Observable<TrainerResult | ProgressMessage> = connectServer(server).pipe(
-                switchMap((v) => (isProgressMessage(v) ? of(v) : getService(v, serviceUUID))),
-                switchMap((v) => (isProgressMessage(v) ? of(v) : v.getCharacteristic(characteristicUUID))),
-                tap((v) => {
-                    if (!isProgressMessage(v)) {
-                        this.characteristic = v;
+                switchMap((server) => {
+                    if (isProgressMessage(server)) {
+                        return of(server);
                     }
+
+                    return merge(
+                        services.map((serviceUUID) =>
+                            getService(server, serviceUUID).pipe(
+                                tap((service) => console.log(`SERVICE CONNECTED ${serviceUUID}`, service)),
+                            ),
+                        ),
+                    ).pipe(mergeMap(() => EMPTY));
                 }),
-                switchMap((v) => (isProgressMessage(v) ? of(v) : getNotifications(v))),
-                map((v) => (isProgressMessage(v) ? v : parseTrainerData(v))),
+                // switchMap((v) => (isProgressMessage(v) ? of(v) : v.getCharacteristic(characteristicUUID))),
+                // tap((v) => {
+                //     if (!isProgressMessage(v)) {
+                //         this.characteristic = v;
+                //     }
+                // }),
+                // switchMap((v) => (isProgressMessage(v) ? of(v) : getNotifications(v))),
+                // map((v) => (isProgressMessage(v) ? v : parseTrainerData(v))),
                 share(),
             );
 
