@@ -2,6 +2,7 @@ import { Observable, of } from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators';
 
 import { ProgressMessage } from '../contracts';
+import { createProgress } from './messages.helper';
 import { isProgressMessage } from './type-guards.helper';
 
 export function maintainWakeLock(): Observable<ProgressMessage> {
@@ -18,8 +19,7 @@ function requestWakeLock(): Observable<WakeLockSentinel | ProgressMessage> {
 
         navigator.wakeLock.request('screen').then(
             (sentinel) => {
-                console.log(`Wake Lock Obtained`);
-                observer.next({ type: 'progressMessage', message: 'Wake Lock Obtained' });
+                observer.next(createProgress('Wake Lock Obtained', sentinel));
                 _sentinel = sentinel;
                 observer.next(sentinel);
             },

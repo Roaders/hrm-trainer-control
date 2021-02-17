@@ -92,7 +92,7 @@ ${this._logOutput}]`;
             (error) => this.handleError(error, 'Error connecting to sensor'),
         );
 
-        const wakeLockSubscription = maintainWakeLock().subscribe((result) => this.handleUpdate(result, false));
+        const wakeLockSubscription = maintainWakeLock().subscribe((result) => this.handleUpdate(result));
         this.subscription.add(wakeLockSubscription);
     }
 
@@ -104,14 +104,10 @@ ${this._logOutput}]`;
         this._heartRate = undefined;
     }
 
-    private handleUpdate(result: HeartRateResult | ProgressMessage, updateButton = true) {
+    private handleUpdate(result: HeartRateResult | ProgressMessage) {
         this.log(isProgressMessage(result) ? result : { heartRate: result.heartRate });
 
         if (isProgressMessage(result)) {
-            if (updateButton) {
-                this._heartRate = undefined;
-                this._buttonText = result.message;
-            }
             return;
         }
 

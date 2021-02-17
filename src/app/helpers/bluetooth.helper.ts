@@ -1,5 +1,5 @@
 import { from, interval, merge, Observable, of } from 'rxjs';
-import { catchError, map, switchMap, take, tap } from 'rxjs/operators';
+import { catchError, map, mergeMap, switchMap, take, tap } from 'rxjs/operators';
 
 import { ProgressMessage } from '../contracts';
 import { createProgress } from './messages.helper';
@@ -11,28 +11,24 @@ export function requestDevice(
     services: [BluetoothServiceUUID, ...BluetoothServiceUUID[]],
     retries = 0,
 ): Observable<BluetoothDevice | ProgressMessage> {
-    console.log(`requestDevice(${retries})...`, services);
     const requestStream = from(navigator.bluetooth.requestDevice({ filters: [{ services }] })).pipe(
-        tap((device) => console.log(`Device Selected:`, device.name)),
+        mergeMap((device) => merge(of(createProgress(`Device Selected: ${device.name}`, device)), of(device))),
         catchError((err) => {
-            console.log(`Error selecting device`, err);
             if (retries >= retryCount || err.name === 'NotFoundError') {
                 throw err;
             } else {
-                return requestDevice(services, retries + 1);
+                return merge(of(createProgress(`Error selecting device`, err)), requestDevice(services, retries + 1));
             }
         }),
     );
 
-    return merge(of(createProgress('Requesting Device...')), requestStream);
+    return merge(of(createProgress('Requesting Device...', services)), requestStream);
 }
 
 export function connectServer(
     device: BluetoothDevice,
     retries = 0,
 ): Observable<BluetoothRemoteGATTServer | ProgressMessage> {
-    console.log(`connectServer(${retries})...`);
-
     if (device.gatt == null) {
         throw new Error(`gatt is not defined on device`);
     }
@@ -45,10 +41,10 @@ export function connectServer(
 
         server.connect().then(
             () => {
-                console.log(`Server Connected (unsubscribed: ${unsubscribed})`, server);
                 if (unsubscribed) {
                     server.disconnect();
                 } else {
+                    observer.next(createProgress(`Server Connected...`, server));
                     observer.next(server);
                 }
             },
@@ -68,9 +64,8 @@ export function connectServer(
         };
     }).pipe(
         catchError((err) => {
-            console.log(`Error connecting to server`, err);
             if (retries < retryCount) {
-                return connectServer(device, retries + 1);
+                return merge(of(createProgress(`Error connecting to server`, err)), connectServer(device, retries + 1));
             } else {
                 throw err;
             }
@@ -83,29 +78,33 @@ export function getService(
     service: BluetoothServiceUUID,
     retries = 0,
 ): Observable<BluetoothRemoteGATTService | ProgressMessage> {
-    console.log(`getService(${retries}) '${service}'...`, server);
+    console.log(`getService ${service}`, server);
 
     const getServiceStream = from(server.getPrimaryService(service)).pipe(
-        tap(() => console.log(`Service returned`)),
+        mergeMap((service) => merge(of(createProgress(`Service Connected`, service)), of(service))),
         catchError((err) => {
-            console.log(`Error getting service: '${service}' (${retries})`, server, err);
+            let returnObservable: Observable<BluetoothRemoteGATTService | ProgressMessage>;
+
             if (!server.connected) {
-                return connectServer(server.device, retries + 1).pipe(
+                returnObservable = connectServer(server.device, retries + 1).pipe(
                     switchMap((v) => (isProgressMessage(v) ? of(v) : getService(server, service, retries + 1))),
                 );
             } else if (retries < 3) {
-                return getService(server, service, retries + 1);
+                returnObservable = getService(server, service, retries + 1);
             } else {
                 throw err;
             }
+
+            return merge(of(createProgress(`Error getting service '${service}' (${retries})`, err)), returnObservable);
         }),
     );
 
-    return merge(of(createProgress('Getting Service...')), getServiceStream);
+    return merge(of(createProgress(`Getting Service '${service}'...`, server)), getServiceStream);
 }
 
-export function getNotifications(characteristic: BluetoothRemoteGATTCharacteristic): Observable<DataView> {
-    console.log(`starting notifications`, characteristic);
+export function getNotifications(
+    characteristic: BluetoothRemoteGATTCharacteristic,
+): Observable<DataView | ProgressMessage> {
     characteristic.startNotifications();
 
     return new Observable((observer) => {
@@ -114,6 +113,7 @@ export function getNotifications(characteristic: BluetoothRemoteGATTCharacterist
                 observer.next(characteristic.value);
             }
         }
+        observer.next(createProgress(`Starting Notifications`, characteristic));
         characteristic.addEventListener('characteristicvaluechanged', handleEvent);
 
         return {
@@ -138,11 +138,10 @@ export function timeOutStream<T>(timeInMs: number): Observable<T> {
 export function deviceDisconnectionStream(device: BluetoothDevice): Observable<BluetoothDevice | ProgressMessage> {
     return new Observable<BluetoothDevice | ProgressMessage>((observer) => {
         function handleEvent() {
-            console.log(`DEVICE DISCONNECTED`);
-            observer.next(createProgress('Device disconnected.'));
             observer.next(device);
         }
-        console.log(`Add event listener: gattserverdisconnected`);
+
+        observer.next(createProgress(`Add event listener: gattserverdisconnected`, device));
         device.addEventListener('gattserverdisconnected', handleEvent);
 
         return {

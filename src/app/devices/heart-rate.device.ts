@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { defer, from, merge, Observable, of } from 'rxjs';
-import { filter, map, mergeMap, share, skipUntil, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { from, merge, Observable, of } from 'rxjs';
+import { filter, map, mergeMap, share, switchMap, takeUntil, tap } from 'rxjs/operators';
 
 import { HeartRateResult, ProgressMessage } from '../contracts';
 import {
@@ -41,7 +41,6 @@ export class HeartRateDevice {
 
     public async disconnect(): Promise<boolean> {
         if (this.characteristic != null && this.server?.connected) {
-            console.log(`Stopping notifications`, this.characteristic);
             try {
                 await this.characteristic.stopNotifications();
             } catch (e) {
@@ -50,7 +49,6 @@ export class HeartRateDevice {
         }
 
         if (this.server) {
-            console.log(`Stopping server`, this.server);
             this.server.disconnect();
         }
 
