@@ -1,9 +1,7 @@
-import { from, interval, merge, Observable, of } from 'rxjs';
-import { catchError, map, mergeMap, switchMap, take, tap } from 'rxjs/operators';
+import { from, interval, Observable } from 'rxjs';
+import { catchError, map, switchMap, take, tap } from 'rxjs/operators';
 
-import { ProgressMessage } from '../contracts';
 import { createProgress } from './messages.helper';
-import { isProgressMessage } from './type-guards.helper';
 
 const retryCount = 5;
 

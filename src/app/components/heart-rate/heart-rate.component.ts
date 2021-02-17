@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { Subscription } from 'rxjs';
 
 import { NOT_FOUND_ERROR } from '../../constants';
-import { HeartRateResult, ProgressMessage } from '../../contracts';
+import { HeartRateResult } from '../../contracts';
 import { HeartRateDevice } from '../../devices';
-import { isProgressMessage, maintainWakeLock } from '../../helpers';
+import { maintainWakeLock } from '../../helpers';
 
 const connectButtonText = 'Connect HRM';
 
