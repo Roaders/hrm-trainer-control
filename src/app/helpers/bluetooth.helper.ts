@@ -1,5 +1,5 @@
 import { from, interval, merge, Observable, of } from 'rxjs';
-import { catchError, map, mergeMap, switchMap, take, tap } from 'rxjs/operators';
+import { catchError, map, mergeMap, switchMap, take } from 'rxjs/operators';
 
 import { ProgressMessage } from '../contracts';
 import { createProgress } from './messages.helper';
