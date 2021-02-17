@@ -8,6 +8,8 @@ import {
     deviceDisconnectionStream,
     getNotifications,
     getService,
+    HEART_RATE_CHARACTERISTIC,
+    HEART_RATE_SERVICE,
     isProgressMessage,
     parseHeartRate,
     requestDevice,
@@ -20,7 +22,7 @@ export class HeartRateDevice {
     private characteristic?: BluetoothRemoteGATTCharacteristic;
 
     public connect(): Observable<HeartRateResult | ProgressMessage> {
-        return requestDevice(['heart_rate']).pipe(
+        return requestDevice([HEART_RATE_SERVICE]).pipe(
             switchMap((server) => {
                 if (isProgressMessage(server)) {
                     return of(server);
@@ -69,8 +71,8 @@ export class HeartRateDevice {
             this.server = server;
 
             const updatesStream: Observable<HeartRateResult | ProgressMessage> = connectServer(server).pipe(
-                switchMap((v) => (isProgressMessage(v) ? of(v) : getService(v, 'heart_rate'))),
-                switchMap((v) => (isProgressMessage(v) ? of(v) : v.getCharacteristic('heart_rate_measurement'))),
+                switchMap((v) => (isProgressMessage(v) ? of(v) : getService(v, HEART_RATE_SERVICE))),
+                switchMap((v) => (isProgressMessage(v) ? of(v) : v.getCharacteristic(HEART_RATE_CHARACTERISTIC))),
                 tap((v) => {
                     if (!isProgressMessage(v)) {
                         this.characteristic = v;
