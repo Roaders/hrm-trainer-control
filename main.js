@@ -4,23 +4,37 @@
 /*!**********************************************!*\
   !*** ./src/app/helpers/heart-rate.helper.ts ***!
   \**********************************************/
-/*! exports provided: parseHeartRate */
+/*! exports provided: HEART_RATE_SERVICE, HEART_RATE_CHARACTERISTIC, rate16Bits, contactDetected, contactSensorPresent, energyPresent, rrIntervalPresent, parseHeartRate */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HEART_RATE_SERVICE", function() { return HEART_RATE_SERVICE; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HEART_RATE_CHARACTERISTIC", function() { return HEART_RATE_CHARACTERISTIC; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "rate16Bits", function() { return rate16Bits; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "contactDetected", function() { return contactDetected; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "contactSensorPresent", function() { return contactSensorPresent; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "energyPresent", function() { return energyPresent; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "rrIntervalPresent", function() { return rrIntervalPresent; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parseHeartRate", function() { return parseHeartRate; });
 /* harmony import */ var _type_guards_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./type-guards.helper */ "VPBO");
 
+const HEART_RATE_SERVICE = 'heart_rate';
+const HEART_RATE_CHARACTERISTIC = `heart_rate_measurement`;
+const rate16Bits = 0x1;
+const contactDetected = 0x2;
+const contactSensorPresent = 0x4;
+const energyPresent = 0x8;
+const rrIntervalPresent = 0x10;
 function parseHeartRate(value) {
     // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
     value = Object(_type_guards_helper__WEBPACK_IMPORTED_MODULE_0__["isDataView"])(value) ? value : new DataView(value);
     const flags = value.getUint8(0);
-    const rate16Bits = flags & 0x1;
+    const rate16BitsFlag = flags & rate16Bits;
     const result = {};
     let index = 1;
     let heartRate;
-    if (rate16Bits) {
+    if (rate16BitsFlag) {
         heartRate = value.getUint16(index, /*littleEndian=*/ true);
         index += 2;
     }
@@ -28,18 +42,18 @@ function parseHeartRate(value) {
         heartRate = value.getUint8(index);
         index += 1;
     }
-    const contactDetected = flags & 0x2;
-    const contactSensorPresent = flags & 0x4;
-    if (contactSensorPresent) {
-        result.contactDetected = !!contactDetected;
+    const contactDetectedFlag = flags & contactDetected;
+    const contactSensorPresentFlag = flags & contactSensorPresent;
+    if (contactSensorPresentFlag) {
+        result.contactDetected = !!contactDetectedFlag;
     }
-    const energyPresent = flags & 0x8;
-    if (energyPresent) {
+    const energyPresentFlag = flags & energyPresent;
+    if (energyPresentFlag) {
         result.energyExpended = value.getUint16(index, /*littleEndian=*/ true);
         index += 2;
     }
-    const rrIntervalPresent = flags & 0x10;
-    if (rrIntervalPresent) {
+    const rrIntervalPresentFlag = flags & rrIntervalPresent;
+    if (rrIntervalPresentFlag) {
         result.rrIntervals = [];
         for (; index + 1 < value.byteLength; index += 2) {
             result.rrIntervals.push(value.getUint16(index, /*littleEndian=*/ true));
@@ -73,7 +87,13 @@ module.exports = __webpack_require__(/*! /home/runner/work/hrm-trainer-control/h
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createProgress", function() { return createProgress; });
-function createProgress(message) {
+function createProgress(message, data) {
+    if (data != null) {
+        console.log(`PROGRESS MESSAGE`, message, data);
+    }
+    else {
+        console.log(`PROGRESS MESSAGE`, message);
+    }
     return { message, type: 'progressMessage' };
 }
 
@@ -84,7 +104,7 @@ function createProgress(message) {
 /*!**********************************!*\
   !*** ./src/app/helpers/index.ts ***!
   \**********************************/
-/*! exports provided: requestDevice, timeOutStream, deviceDisconnectionStream, connectServer, getService, getNotifications, parseHeartRate, isDataView, isProgressMessage, maintainWakeLock */
+/*! exports provided: requestDevice, connectServer, getService, getNotifications, timeOutStream, deviceDisconnectionStream, handleProgress, HEART_RATE_SERVICE, HEART_RATE_CHARACTERISTIC, rate16Bits, contactDetected, contactSensorPresent, energyPresent, rrIntervalPresent, parseHeartRate, isDataView, isProgressMessage, maintainWakeLock */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -92,17 +112,33 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./bluetooth.helper */ "cJ4H");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "requestDevice", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["requestDevice"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "timeOutStream", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["timeOutStream"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "deviceDisconnectionStream", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["deviceDisconnectionStream"]; });
-
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "connectServer", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["connectServer"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "getService", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["getService"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "getNotifications", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["getNotifications"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "timeOutStream", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["timeOutStream"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "deviceDisconnectionStream", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["deviceDisconnectionStream"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "handleProgress", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["handleProgress"]; });
+
 /* harmony import */ var _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./heart-rate.helper */ "+/Iz");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HEART_RATE_SERVICE", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["HEART_RATE_SERVICE"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HEART_RATE_CHARACTERISTIC", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["HEART_RATE_CHARACTERISTIC"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "rate16Bits", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["rate16Bits"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "contactDetected", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["contactDetected"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "contactSensorPresent", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["contactSensorPresent"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "energyPresent", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["energyPresent"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "rrIntervalPresent", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["rrIntervalPresent"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "parseHeartRate", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["parseHeartRate"]; });
 
 /* harmony import */ var _type_guards_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./type-guards.helper */ "VPBO");
@@ -171,22 +207,15 @@ __webpack_require__.r(__webpack_exports__);
 
 class HeartRateDevice {
     connect() {
-        return Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["requestDevice"])(['heart_rate']).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["switchMap"])((server) => {
-            if (Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(server)) {
-                return Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["of"])(server);
-            }
-            console.log(`DEVICE CONNECTED`);
-            const updatesStream = this.subscribeToUpdates(server).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["share"])());
-            const deviceDisconnection = Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["deviceDisconnectionStream"])(server).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["share"])());
-            const reconnectionStream = deviceDisconnection.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["skipUntil"])(updatesStream.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["filter"])((v) => !Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(v)))), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["tap"])(() => console.log(`DEVICE DISCONNECTED`)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["switchMap"])(() => this.subscribeToUpdates(server)));
-            return Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["merge"])(updatesStream.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["takeUntil"])(deviceDisconnection)), reconnectionStream);
-        }));
+        return Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["requestDevice"])([_helpers__WEBPACK_IMPORTED_MODULE_3__["HEART_RATE_SERVICE"]]).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["mergeMap"])(Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["handleProgress"])((device) => {
+            const updatesStream = this.subscribeToUpdates(device).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["share"])());
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["merge"])(updatesStream, Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["timeOutStream"])(60000).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["takeUntil"])(updatesStream.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["filter"])((v) => !Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(v))))));
+        })));
     }
     disconnect() {
         var _a;
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
             if (this.characteristic != null && ((_a = this.server) === null || _a === void 0 ? void 0 : _a.connected)) {
-                console.log(`Stopping notifications`, this.characteristic);
                 try {
                     yield this.characteristic.stopNotifications();
                 }
@@ -195,7 +224,6 @@ class HeartRateDevice {
                 }
             }
             if (this.server) {
-                console.log(`Stopping server`, this.server);
                 this.server.disconnect();
             }
             this.server = undefined;
@@ -203,17 +231,12 @@ class HeartRateDevice {
             return true;
         });
     }
-    subscribeToUpdates(server) {
-        return Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["defer"])(() => {
-            console.log(`HeartRateDevice.subscribeToUpdates`);
-            this.server = server;
-            const updatesStream = Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["connectServer"])(server).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["switchMap"])((v) => (Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(v) ? Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["of"])(v) : Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["getService"])(v, 'heart_rate'))), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["switchMap"])((v) => (Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(v) ? Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["of"])(v) : v.getCharacteristic('heart_rate_measurement'))), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["tap"])((v) => {
-                if (!Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(v)) {
-                    this.characteristic = v;
-                }
-            }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["switchMap"])((v) => (Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(v) ? Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["of"])(v) : Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["getNotifications"])(v))), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["map"])((v) => (Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(v) ? v : Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["parseHeartRate"])(v))), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["share"])());
-            return Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["merge"])(updatesStream, Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["timeOutStream"])(60000).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["takeUntil"])(updatesStream.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["filter"])((v) => !Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(v))))));
-        });
+    subscribeToUpdates(device) {
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["merge"])(Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["of"])(device), Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["deviceDisconnectionStream"])(device)).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["switchMap"])(Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["handleProgress"])((device) => Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["connectServer"])(device))), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["switchMap"])(Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["handleProgress"])((server) => Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["getService"])(server, _helpers__WEBPACK_IMPORTED_MODULE_3__["HEART_RATE_SERVICE"]))), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["switchMap"])(Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["handleProgress"])((service) => Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["from"])(service.getCharacteristic(_helpers__WEBPACK_IMPORTED_MODULE_3__["HEART_RATE_CHARACTERISTIC"])))), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["tap"])((value) => {
+            if (!Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(value)) {
+                this.characteristic = value;
+            }
+        }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["switchMap"])(Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["handleProgress"])((characteristic) => Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["getNotifications"])(characteristic))), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["map"])((data) => (Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(data) ? data : Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["parseHeartRate"])(data))));
     }
 }
 HeartRateDevice.ɵfac = function HeartRateDevice_Factory(t) { return new (t || HeartRateDevice)(); };
@@ -427,7 +450,7 @@ ${this._logOutput}]`;
         this._buttonEnabled = false;
         this._buttonText = 'Connecting...';
         this.subscription = this.heartRateDevice.connect().subscribe((result) => this.handleUpdate(result), (error) => this.handleError(error, 'Error connecting to sensor'));
-        const wakeLockSubscription = Object(_helpers__WEBPACK_IMPORTED_MODULE_2__["maintainWakeLock"])().subscribe((result) => this.handleUpdate(result, false));
+        const wakeLockSubscription = Object(_helpers__WEBPACK_IMPORTED_MODULE_2__["maintainWakeLock"])().subscribe((result) => this.handleUpdate(result));
         this.subscription.add(wakeLockSubscription);
     }
     reset() {
@@ -437,12 +460,9 @@ ${this._logOutput}]`;
         this._errorMessage = undefined;
         this._heartRate = undefined;
     }
-    handleUpdate(result, updateButton = true) {
+    handleUpdate(result) {
         this.log(Object(_helpers__WEBPACK_IMPORTED_MODULE_2__["isProgressMessage"])(result) ? result : { heartRate: result.heartRate });
         if (Object(_helpers__WEBPACK_IMPORTED_MODULE_2__["isProgressMessage"])(result)) {
-            if (updateButton) {
-                this._buttonText = result.message;
-            }
             return;
         }
         this.reset();
@@ -561,19 +581,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "maintainWakeLock", function() { return maintainWakeLock; });
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! rxjs */ "qCKp");
 /* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! rxjs/operators */ "kU1M");
-/* harmony import */ var _type_guards_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./type-guards.helper */ "VPBO");
+/* harmony import */ var _messages_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./messages.helper */ "3IcY");
+/* harmony import */ var _type_guards_helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./type-guards.helper */ "VPBO");
+
 
 
 
 function maintainWakeLock() {
-    return requestWakeLock().pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])((v) => (Object(_type_guards_helper__WEBPACK_IMPORTED_MODULE_2__["isProgressMessage"])(v) ? Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(v) : listenForRelease(v))), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])((v) => (Object(_type_guards_helper__WEBPACK_IMPORTED_MODULE_2__["isProgressMessage"])(v) ? Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(v) : requestWakeLock())), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["filter"])(_type_guards_helper__WEBPACK_IMPORTED_MODULE_2__["isProgressMessage"]));
+    return requestWakeLock().pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])((v) => (Object(_type_guards_helper__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(v) ? Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(v) : listenForRelease(v))), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])((v) => (Object(_type_guards_helper__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(v) ? Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(v) : requestWakeLock())), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["filter"])(_type_guards_helper__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"]));
 }
 function requestWakeLock() {
     return new rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"]((observer) => {
         let _sentinel;
         navigator.wakeLock.request('screen').then((sentinel) => {
-            console.log(`Wake Lock Obtained`);
-            observer.next({ type: 'progressMessage', message: 'Wake Lock Obtained' });
+            observer.next(Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])('Wake Lock Obtained', sentinel));
             _sentinel = sentinel;
             observer.next(sentinel);
         }, (error) => observer.error(error));
@@ -605,17 +626,18 @@ function listenForRelease(sentinel) {
 /*!*********************************************!*\
   !*** ./src/app/helpers/bluetooth.helper.ts ***!
   \*********************************************/
-/*! exports provided: requestDevice, timeOutStream, deviceDisconnectionStream, connectServer, getService, getNotifications */
+/*! exports provided: requestDevice, connectServer, getService, getNotifications, timeOutStream, deviceDisconnectionStream, handleProgress */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "requestDevice", function() { return requestDevice; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "timeOutStream", function() { return timeOutStream; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deviceDisconnectionStream", function() { return deviceDisconnectionStream; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "connectServer", function() { return connectServer; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getService", function() { return getService; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getNotifications", function() { return getNotifications; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "timeOutStream", function() { return timeOutStream; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deviceDisconnectionStream", function() { return deviceDisconnectionStream; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "handleProgress", function() { return handleProgress; });
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! rxjs */ "qCKp");
 /* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! rxjs/operators */ "kU1M");
 /* harmony import */ var _messages_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./messages.helper */ "3IcY");
@@ -626,56 +648,30 @@ __webpack_require__.r(__webpack_exports__);
 
 const retryCount = 5;
 function requestDevice(services, retries = 0) {
-    console.log(`requestDevice(${retries})...`, services);
-    const requestStream = Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["from"])(navigator.bluetooth.requestDevice({ filters: [{ services }] })).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["tap"])((device) => console.log(`Device Selected:`, device.name)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["map"])((device) => {
-        if (device.gatt == null) {
-            throw new Error(`gatt is not defined on device`);
-        }
-        return device.gatt;
-    }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["catchError"])((err) => {
-        console.log(`Error selecting device`, err);
+    const requestStream = Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["from"])(navigator.bluetooth.requestDevice({ filters: [{ services }] })).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["mergeMap"])((device) => Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["merge"])(Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Device Selected: ${device.name}`, device)), Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(device))), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["catchError"])((err) => {
         if (retries >= retryCount || err.name === 'NotFoundError') {
             throw err;
         }
         else {
-            return requestDevice(services, retries + 1);
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["merge"])(Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Error selecting device`, err)), requestDevice(services, retries + 1));
         }
     }));
-    return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["merge"])(Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])('Requesting Device...')), requestStream);
+    return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["merge"])(Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])('Requesting Device...', services)), requestStream);
 }
-function timeOutStream(timeInMs) {
-    console.log(`Starting timeout...`, timeInMs);
-    return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["interval"])(timeInMs).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["take"])(1), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["map"])(() => {
-        throw new Error(`Timeout waiting for device connection.`);
-    }));
-}
-function deviceDisconnectionStream(server) {
-    return new rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"]((observer) => {
-        function handleEvent(event) {
-            console.log(`Gatt server disconnected`, event);
-            observer.next(server);
-        }
-        console.log(`Add event listener: gattserverdisconnected`);
-        server.device.addEventListener('gattserverdisconnected', handleEvent);
-        return {
-            unsubscribe: () => {
-                console.log(`Remove Event Listener: gattserverdisconnected`);
-                server.device.removeEventListener('gattserverdisconnected', handleEvent);
-            },
-        };
-    });
-}
-function connectServer(server, retries = 0) {
-    console.log(`connectServer(${retries})...`);
+function connectServer(device, retries = 0) {
+    if (device.gatt == null) {
+        throw new Error(`gatt is not defined on device`);
+    }
+    const server = device.gatt;
     return new rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"]((observer) => {
         let unsubscribed = false;
         observer.next(Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Connecting to Server...`));
         server.connect().then(() => {
-            console.log(`Server Connected (unsubscribed: ${unsubscribed})`, server);
             if (unsubscribed) {
                 server.disconnect();
             }
             else {
+                observer.next(Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Server Connected...`, server));
                 observer.next(server);
             }
         }, (error) => observer.error(error));
@@ -692,9 +688,8 @@ function connectServer(server, retries = 0) {
             },
         };
     }).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["catchError"])((err) => {
-        console.log(`Error connecting to server`, err);
         if (retries < retryCount) {
-            return connectServer(server, retries + 1);
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["merge"])(Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Error connecting to server`, err)), connectServer(device, retries + 1));
         }
         else {
             throw err;
@@ -702,23 +697,23 @@ function connectServer(server, retries = 0) {
     }));
 }
 function getService(server, service, retries = 0) {
-    console.log(`getService(${retries}) '${service}'...`, server);
-    const getServiceStream = Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["from"])(server.getPrimaryService(service)).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["tap"])(() => console.log(`Service returned`)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["catchError"])((err) => {
-        console.log(`Error getting service: '${service}' (${retries})`, server, err);
+    console.log(`getService ${service}`, server);
+    const getServiceStream = Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["from"])(server.getPrimaryService(service)).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["mergeMap"])((service) => Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["merge"])(Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Service Connected`, service)), Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(service))), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["catchError"])((err) => {
+        let returnObservable;
         if (!server.connected) {
-            return connectServer(server, retries + 1).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])((v) => (Object(_type_guards_helper__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(v) ? Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(v) : getService(server, service, retries + 1))));
+            returnObservable = connectServer(server.device, retries + 1).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])((v) => (Object(_type_guards_helper__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(v) ? Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(v) : getService(server, service, retries + 1))));
         }
         else if (retries < 3) {
-            return getService(server, service, retries + 1);
+            returnObservable = getService(server, service, retries + 1);
         }
         else {
             throw err;
         }
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["merge"])(Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Error getting service '${service}' (${retries})`, err)), returnObservable);
     }));
-    return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["merge"])(Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])('Getting Service...')), getServiceStream);
+    return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["merge"])(Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Getting Service '${service}'...`, server)), getServiceStream);
 }
 function getNotifications(characteristic) {
-    console.log(`starting notifications`, characteristic);
     characteristic.startNotifications();
     return new rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"]((observer) => {
         function handleEvent() {
@@ -726,6 +721,7 @@ function getNotifications(characteristic) {
                 observer.next(characteristic.value);
             }
         }
+        observer.next(Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Starting Notifications`, characteristic));
         characteristic.addEventListener('characteristicvaluechanged', handleEvent);
         return {
             unsubscribe: () => {
@@ -733,6 +729,35 @@ function getNotifications(characteristic) {
             },
         };
     });
+}
+function timeOutStream(timeInMs) {
+    console.log(`Starting timeout...`, timeInMs);
+    return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["interval"])(timeInMs).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["take"])(1), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["map"])(() => {
+        throw new Error(`Timeout waiting for device connection.`);
+    }));
+}
+function deviceDisconnectionStream(device) {
+    return new rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"]((observer) => {
+        function handleEvent() {
+            observer.next(device);
+        }
+        observer.next(Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Add event listener: gattserverdisconnected`, device));
+        device.addEventListener('gattserverdisconnected', handleEvent);
+        return {
+            unsubscribe: () => {
+                console.log(`Remove Event Listener: gattserverdisconnected`);
+                device.removeEventListener('gattserverdisconnected', handleEvent);
+            },
+        };
+    });
+}
+function handleProgress(func) {
+    return (value) => {
+        if (Object(_type_guards_helper__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"])(value)) {
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(value);
+        }
+        return func(value);
+    };
 }
 
 
@@ -769,7 +794,7 @@ TrainerComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineC
 /*! exports provided: name, version, scripts, private, dependencies, devDependencies, description, main, repository, keywords, author, license, bugs, homepage, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"name\":\"hrm-trainer-control\",\"version\":\"0.1.4\",\"scripts\":{\"start\":\"ng serve --open\",\"build\":\"ng build\",\"lint\":\"eslint . --ext .ts,.js\",\"lint:fix\":\"eslint . --ext .ts,.js --fix\",\"prepublishOnly\":\"npm run verify-release\",\"test\":\"karma start --singleRun --browsers ChromeHeadless\",\"test:watch\":\"karma start\",\"verify-release\":\"concurrently --kill-others-on-fail npm:build npm:lint\"},\"private\":true,\"dependencies\":{\"@angular/animations\":\"~11.1.2\",\"@angular/common\":\"~11.1.2\",\"@angular/compiler\":\"~11.1.2\",\"@angular/core\":\"~11.1.2\",\"@angular/forms\":\"~11.1.2\",\"@angular/platform-browser\":\"~11.1.2\",\"@angular/platform-browser-dynamic\":\"~11.1.2\",\"@angular/router\":\"~11.1.2\",\"bootstrap\":\"^4.6.0\",\"bootstrap-icons\":\"^1.3.0\",\"jquery\":\"^3.5.1\",\"rxjs\":\"~6.6.0\",\"zone.js\":\"~0.11.3\"},\"devDependencies\":{\"@angular-devkit/build-angular\":\"~0.1101.4\",\"@angular/cli\":\"~11.1.4\",\"@angular/compiler-cli\":\"~11.1.2\",\"@types/dom-screen-wake-lock\":\"^1.0.0\",\"@types/jasmine\":\"^3.6.3\",\"@types/node\":\"^12.11.1\",\"@types/web-bluetooth\":\"0.0.9\",\"@typescript-eslint/eslint-plugin\":\"^4.15.0\",\"@typescript-eslint/parser\":\"^4.15.0\",\"concurrently\":\"^5.3.0\",\"eslint\":\"^7.2.0\",\"eslint-config-prettier\":\"^7.2.0\",\"eslint-config-standard\":\"^14.1.1\",\"eslint-plugin-import\":\"^2.22.1\",\"eslint-plugin-node\":\"^11.1.0\",\"eslint-plugin-prettier\":\"^3.3.1\",\"eslint-plugin-promise\":\"^4.3.1\",\"eslint-plugin-simple-import-sort\":\"^7.0.0\",\"eslint-plugin-standard\":\"^5.0.0\",\"jasmine\":\"^3.6.4\",\"karma\":\"^6.1.1\",\"karma-chrome-launcher\":\"^3.1.0\",\"karma-coverage-istanbul-reporter\":\"^3.0.3\",\"karma-jasmine\":\"^4.0.1\",\"karma-jasmine-html-reporter\":\"^1.5.4\",\"karma-source-map-support\":\"^1.4.0\",\"karma-sourcemap-loader\":\"^0.3.8\",\"karma-webpack\":\"^4.0.2\",\"popper.js\":\"^1.16.1\",\"prettier\":\"^2.2.1\",\"puppeteer\":\"^7.1.0\",\"ts-loader\":\"^8.0.17\",\"typescript\":\"~4.1.2\",\"webpack\":\"^4.46.0\"},\"description\":\"This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.1.4.\",\"main\":\".eslintrc.js\",\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/Roaders/hrm-trainer-control.git\"},\"keywords\":[],\"author\":\"\",\"license\":\"ISC\",\"bugs\":{\"url\":\"https://github.com/Roaders/hrm-trainer-control/issues\"},\"homepage\":\"https://github.com/Roaders/hrm-trainer-control#readme\"}");
+module.exports = JSON.parse("{\"name\":\"hrm-trainer-control\",\"version\":\"0.1.5\",\"scripts\":{\"start\":\"ng serve --open\",\"build\":\"ng build\",\"lint\":\"eslint . --ext .ts,.js\",\"lint:fix\":\"eslint . --ext .ts,.js --fix\",\"prepublishOnly\":\"npm run verify-release\",\"test\":\"karma start --singleRun --browsers ChromeHeadless\",\"test:watch\":\"karma start\",\"verify-release\":\"concurrently --kill-others-on-fail npm:build npm:lint npm:test\"},\"private\":true,\"dependencies\":{\"@angular/animations\":\"~11.1.2\",\"@angular/common\":\"~11.1.2\",\"@angular/compiler\":\"~11.1.2\",\"@angular/core\":\"~11.1.2\",\"@angular/forms\":\"~11.1.2\",\"@angular/platform-browser\":\"~11.1.2\",\"@angular/platform-browser-dynamic\":\"~11.1.2\",\"@angular/router\":\"~11.1.2\",\"bootstrap\":\"^4.6.0\",\"bootstrap-icons\":\"^1.3.0\",\"jquery\":\"^3.5.1\",\"rxjs\":\"~6.6.0\",\"zone.js\":\"~0.11.3\"},\"devDependencies\":{\"@angular-devkit/build-angular\":\"~0.1101.4\",\"@angular/cli\":\"~11.1.4\",\"@angular/compiler-cli\":\"~11.1.2\",\"@types/dom-screen-wake-lock\":\"^1.0.0\",\"@types/jasmine\":\"^3.6.3\",\"@types/node\":\"^12.11.1\",\"@types/web-bluetooth\":\"0.0.9\",\"@typescript-eslint/eslint-plugin\":\"^4.15.0\",\"@typescript-eslint/parser\":\"^4.15.0\",\"concurrently\":\"^5.3.0\",\"eslint\":\"^7.2.0\",\"eslint-config-prettier\":\"^7.2.0\",\"eslint-config-standard\":\"^14.1.1\",\"eslint-plugin-import\":\"^2.22.1\",\"eslint-plugin-node\":\"^11.1.0\",\"eslint-plugin-prettier\":\"^3.3.1\",\"eslint-plugin-promise\":\"^4.3.1\",\"eslint-plugin-simple-import-sort\":\"^7.0.0\",\"eslint-plugin-standard\":\"^5.0.0\",\"jasmine\":\"^3.6.4\",\"karma\":\"^6.1.1\",\"karma-chrome-launcher\":\"^3.1.0\",\"karma-coverage-istanbul-reporter\":\"^3.0.3\",\"karma-jasmine\":\"^4.0.1\",\"karma-jasmine-html-reporter\":\"^1.5.4\",\"karma-source-map-support\":\"^1.4.0\",\"karma-sourcemap-loader\":\"^0.3.8\",\"karma-webpack\":\"^4.0.2\",\"popper.js\":\"^1.16.1\",\"prettier\":\"^2.2.1\",\"puppeteer\":\"^7.1.0\",\"ts-loader\":\"^8.0.17\",\"typescript\":\"~4.1.2\",\"webpack\":\"^4.46.0\"},\"description\":\"This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.1.4.\",\"main\":\".eslintrc.js\",\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/Roaders/hrm-trainer-control.git\"},\"keywords\":[],\"author\":\"\",\"license\":\"ISC\",\"bugs\":{\"url\":\"https://github.com/Roaders/hrm-trainer-control/issues\"},\"homepage\":\"https://github.com/Roaders/hrm-trainer-control#readme\"}");
 
 /***/ }),
 
