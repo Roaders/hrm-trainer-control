@@ -9,7 +9,7 @@
         "prepublishOnly": "npm run verify-release",
         "test": "karma start --singleRun --browsers ChromeHeadless",
         "test:watch": "karma start",
-        "verify-release": "concurrently --kill-others-on-fail npm:build npm:lint, npm:test"
+        "verify-release": "concurrently --kill-others-on-fail npm:build npm:lint npm:test"
     },
     "private": true,
     "dependencies": {
