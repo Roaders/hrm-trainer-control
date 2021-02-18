@@ -77,50 +77,17 @@ module.exports = __webpack_require__(/*! /home/runner/work/hrm-trainer-control/h
 
 /***/ }),
 
-/***/ "3IcY":
-/*!********************************************!*\
-  !*** ./src/app/helpers/messages.helper.ts ***!
-  \********************************************/
-/*! exports provided: createProgress */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createProgress", function() { return createProgress; });
-function createProgress(message, data) {
-    if (data != null) {
-        console.log(message, data);
-    }
-    else {
-        console.log(message);
-    }
-    return { message, type: 'progressMessage' };
-}
-
-
-/***/ }),
-
 /***/ "6rF9":
 /*!**********************************!*\
   !*** ./src/app/helpers/index.ts ***!
   \**********************************/
-/*! exports provided: requestDevice, connectServer, getService, getNotifications, timeOutStream, deviceDisconnectionStream, HEART_RATE_SERVICE, HEART_RATE_CHARACTERISTIC, rate16Bits, contactDetected, contactSensorPresent, energyPresent, rrIntervalPresent, parseHeartRate, isDataView, isProgressMessage, maintainWakeLock */
+/*! exports provided: BluetoothHelper, HEART_RATE_SERVICE, HEART_RATE_CHARACTERISTIC, rate16Bits, contactDetected, contactSensorPresent, energyPresent, rrIntervalPresent, parseHeartRate, LogLevel, Logger, isDataView, isProgressMessage, WakelockHelper */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./bluetooth.helper */ "cJ4H");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "requestDevice", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["requestDevice"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "connectServer", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["connectServer"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "getService", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["getService"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "getNotifications", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["getNotifications"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "timeOutStream", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["timeOutStream"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "deviceDisconnectionStream", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["deviceDisconnectionStream"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "BluetoothHelper", function() { return _bluetooth_helper__WEBPACK_IMPORTED_MODULE_0__["BluetoothHelper"]; });
 
 /* harmony import */ var _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./heart-rate.helper */ "+/Iz");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HEART_RATE_SERVICE", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["HEART_RATE_SERVICE"]; });
@@ -139,13 +106,19 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "parseHeartRate", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["parseHeartRate"]; });
 
-/* harmony import */ var _type_guards_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./type-guards.helper */ "VPBO");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "isDataView", function() { return _type_guards_helper__WEBPACK_IMPORTED_MODULE_2__["isDataView"]; });
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./logger */ "Dw+o");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LogLevel", function() { return _logger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "isProgressMessage", function() { return _type_guards_helper__WEBPACK_IMPORTED_MODULE_2__["isProgressMessage"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Logger", function() { return _logger__WEBPACK_IMPORTED_MODULE_2__["Logger"]; });
 
-/* harmony import */ var _wakelock_helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./wakelock.helper */ "a7Nh");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "maintainWakeLock", function() { return _wakelock_helper__WEBPACK_IMPORTED_MODULE_3__["maintainWakeLock"]; });
+/* harmony import */ var _type_guards_helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./type-guards.helper */ "VPBO");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "isDataView", function() { return _type_guards_helper__WEBPACK_IMPORTED_MODULE_3__["isDataView"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "isProgressMessage", function() { return _type_guards_helper__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"]; });
+
+/* harmony import */ var _wakelock_helper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./wakelock.helper */ "a7Nh");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WakelockHelper", function() { return _wakelock_helper__WEBPACK_IMPORTED_MODULE_4__["WakelockHelper"]; });
+
 
 
 
@@ -183,6 +156,57 @@ const environment = {
 
 /***/ }),
 
+/***/ "Dw+o":
+/*!***********************************!*\
+  !*** ./src/app/helpers/logger.ts ***!
+  \***********************************/
+/*! exports provided: LogLevel, Logger */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LogLevel", function() { return LogLevel; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Logger", function() { return Logger; });
+var LogLevel;
+(function (LogLevel) {
+    LogLevel[LogLevel["fatal"] = 5] = "fatal";
+    LogLevel[LogLevel["error"] = 4] = "error";
+    LogLevel[LogLevel["warn"] = 3] = "warn";
+    LogLevel[LogLevel["info"] = 2] = "info";
+    LogLevel[LogLevel["debug"] = 1] = "debug";
+    LogLevel[LogLevel["trace"] = 0] = "trace";
+})(LogLevel || (LogLevel = {}));
+class Logger {
+    constructor() {
+        this._logs = [];
+    }
+    log(level, message, ...meta) {
+        console.log(`[${level.toUpperCase()}] ${message}`, ...meta);
+        this._logs.push({ level: LogLevel[level], message, meta });
+    }
+    fatal(message, ...meta) {
+        this.log('fatal', message, ...meta);
+    }
+    error(message, ...meta) {
+        this.log('error', message, ...meta);
+    }
+    warn(message, ...meta) {
+        this.log('warn', message, ...meta);
+    }
+    info(message, ...meta) {
+        this.log('info', message, ...meta);
+    }
+    debug(message, ...meta) {
+        this.log('debug', message, ...meta);
+    }
+    trace(message, ...meta) {
+        this.log('trace', message, ...meta);
+    }
+}
+
+
+/***/ }),
+
 /***/ "PdRg":
 /*!**********************************************!*\
   !*** ./src/app/devices/heart-rate.device.ts ***!
@@ -193,51 +217,32 @@ const environment = {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HeartRateDevice", function() { return HeartRateDevice; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "mrSG");
-/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! rxjs */ "qCKp");
-/* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs/operators */ "kU1M");
-/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../helpers */ "6rF9");
-/* harmony import */ var _helpers_messages_helper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../helpers/messages.helper */ "3IcY");
-/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/core */ "fXoL");
-
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! rxjs */ "qCKp");
+/* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! rxjs/operators */ "kU1M");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../helpers */ "6rF9");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/core */ "fXoL");
 
 
 
 
 
 class HeartRateDevice {
-    connect(connectionRetries = 5) {
-        return Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["requestDevice"])([_helpers__WEBPACK_IMPORTED_MODULE_3__["HEART_RATE_SERVICE"]]).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["mergeMap"])((device) => {
-            const updatesStream = this.subscribeToUpdates(device, connectionRetries).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["share"])());
-            return Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["merge"])(updatesStream, Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["timeOutStream"])(60000).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["takeUntil"])(updatesStream)));
-        }));
+    constructor(helper) {
+        this.helper = helper;
     }
-    disconnect() {
-        var _a;
-        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
-            if (this.characteristic != null && ((_a = this.server) === null || _a === void 0 ? void 0 : _a.connected)) {
-                try {
-                    yield this.characteristic.stopNotifications();
-                }
-                catch (e) {
-                    Object(_helpers_messages_helper__WEBPACK_IMPORTED_MODULE_4__["createProgress"])(`Error stopping notifications: `, e);
-                }
-            }
-            if (this.server) {
-                this.server.disconnect();
-            }
-            this.server = undefined;
-            this.characteristic = undefined;
-            return true;
-        });
+    connect(connectionRetries = 5) {
+        return this.helper.requestDevice([_helpers__WEBPACK_IMPORTED_MODULE_2__["HEART_RATE_SERVICE"]]).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["mergeMap"])((device) => {
+            const updatesStream = this.subscribeToUpdates(device, connectionRetries).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["share"])());
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["merge"])(updatesStream, this.helper.createTimeOutStream(60000).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["takeUntil"])(updatesStream)));
+        }));
     }
     subscribeToUpdates(device, connectionRetries) {
         let retries = 0;
-        return Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["merge"])(Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["of"])(device), Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["deviceDisconnectionStream"])(device)).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["filter"])(() => retries++ < connectionRetries), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["switchMap"])((device) => Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["connectServer"])(device)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["switchMap"])((server) => Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["getService"])(server, _helpers__WEBPACK_IMPORTED_MODULE_3__["HEART_RATE_SERVICE"])), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["switchMap"])((service) => Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["from"])(service.getCharacteristic(_helpers__WEBPACK_IMPORTED_MODULE_3__["HEART_RATE_CHARACTERISTIC"]))), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["tap"])((value) => (this.characteristic = value)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["switchMap"])((characteristic) => Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["getNotifications"])(characteristic)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["tap"])(() => (retries = 0)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["map"])((data) => Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["parseHeartRate"])(data)));
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["merge"])(Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["of"])(device), this.helper.createDeviceDisconnectionStream(device)).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["filter"])(() => retries++ < connectionRetries), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])((device) => this.helper.connectServer(device)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])((server) => this.helper.getService(server, _helpers__WEBPACK_IMPORTED_MODULE_2__["HEART_RATE_SERVICE"])), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])((service) => Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["from"])(service.getCharacteristic(_helpers__WEBPACK_IMPORTED_MODULE_2__["HEART_RATE_CHARACTERISTIC"]))), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])((characteristic) => this.helper.getNotifications(characteristic)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["tap"])(() => (retries = 0)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["map"])((data) => Object(_helpers__WEBPACK_IMPORTED_MODULE_2__["parseHeartRate"])(data)));
     }
 }
-HeartRateDevice.ɵfac = function HeartRateDevice_Factory(t) { return new (t || HeartRateDevice)(); };
-HeartRateDevice.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_5__["ɵɵdefineInjectable"]({ token: HeartRateDevice, factory: HeartRateDevice.ɵfac });
+HeartRateDevice.ɵfac = function HeartRateDevice_Factory(t) { return new (t || HeartRateDevice)(_angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵinject"](_helpers__WEBPACK_IMPORTED_MODULE_2__["BluetoothHelper"])); };
+HeartRateDevice.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdefineInjectable"]({ token: HeartRateDevice, factory: HeartRateDevice.ɵfac });
 
 
 /***/ }),
@@ -316,9 +321,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HeartRateComponent", function() { return HeartRateComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "mrSG");
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../constants */ "l207");
-/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../helpers */ "6rF9");
-/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/core */ "fXoL");
-/* harmony import */ var _devices__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../devices */ "YudN");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/core */ "fXoL");
+/* harmony import */ var _devices__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../devices */ "YudN");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../helpers */ "6rF9");
 /* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/common */ "ofXK");
 
 
@@ -327,74 +332,76 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function HeartRateComponent_div_1_Template(rf, ctx) { if (rf & 1) {
-    const _r6 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵgetCurrentView"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "div", 8);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](2, "button", 9);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵlistener"]("click", function HeartRateComponent_div_1_Template_button_click_2_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵrestoreView"](_r6); const ctx_r5 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"](); return ctx_r5.dismissMessages(); });
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](3, "span", 10);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](4, "\u00D7");
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+    const _r6 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵgetCurrentView"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "div", 8);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](2, "button", 9);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function HeartRateComponent_div_1_Template_button_click_2_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵrestoreView"](_r6); const ctx_r5 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"](); return ctx_r5.dismissMessages(); });
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](3, "span", 10);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](4, "\u00D7");
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
 } if (rf & 2) {
-    const ctx_r0 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtextInterpolate1"](" ", ctx_r0.warningMessage, " ");
+    const ctx_r0 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtextInterpolate1"](" ", ctx_r0.warningMessage, " ");
 } }
 function HeartRateComponent_div_2_Template(rf, ctx) { if (rf & 1) {
-    const _r8 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵgetCurrentView"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "div", 11);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](2, "button", 9);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵlistener"]("click", function HeartRateComponent_div_2_Template_button_click_2_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵrestoreView"](_r8); const ctx_r7 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"](); return ctx_r7.dismissMessages(); });
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](3, "span", 10);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](4, "\u00D7");
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+    const _r8 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵgetCurrentView"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "div", 11);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](2, "button", 9);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function HeartRateComponent_div_2_Template_button_click_2_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵrestoreView"](_r8); const ctx_r7 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"](); return ctx_r7.dismissMessages(); });
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](3, "span", 10);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](4, "\u00D7");
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
 } if (rf & 2) {
-    const ctx_r1 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtextInterpolate1"](" ", ctx_r1.errorMessage, " ");
+    const ctx_r1 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtextInterpolate1"](" ", ctx_r1.errorMessage, " ");
 } }
 function HeartRateComponent_div_4_Template(rf, ctx) { if (rf & 1) {
-    const _r10 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵgetCurrentView"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "div", 12);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](1, "button", 13);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵlistener"]("click", function HeartRateComponent_div_4_Template_button_click_1_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵrestoreView"](_r10); const ctx_r9 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"](); return ctx_r9.connectSensor(); });
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](2);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+    const _r10 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵgetCurrentView"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "div", 12);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](1, "button", 13);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function HeartRateComponent_div_4_Template_button_click_1_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵrestoreView"](_r10); const ctx_r9 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"](); return ctx_r9.connectSensor(); });
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](2);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
 } if (rf & 2) {
-    const ctx_r2 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("disabled", !ctx_r2.buttonEnabled);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtextInterpolate"](ctx_r2.buttonText);
+    const ctx_r2 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("disabled", !ctx_r2.buttonEnabled);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtextInterpolate"](ctx_r2.buttonText);
 } }
 function HeartRateComponent_div_5_Template(rf, ctx) { if (rf & 1) {
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "div", 14);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "div", 14);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
 } if (rf & 2) {
-    const ctx_r3 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtextInterpolate1"](" ", ctx_r3.heartRate, " ");
+    const ctx_r3 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtextInterpolate1"](" ", ctx_r3.heartRate, " ");
 } }
 function HeartRateComponent_button_8_Template(rf, ctx) { if (rf & 1) {
-    const _r12 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵgetCurrentView"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "button", 15);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵlistener"]("click", function HeartRateComponent_button_8_Template_button_click_0_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵrestoreView"](_r12); const ctx_r11 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"](); return ctx_r11.disconnect(); });
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](1, "span", 10);
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](2, "\u00D7");
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+    const _r12 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵgetCurrentView"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "button", 15);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function HeartRateComponent_button_8_Template_button_click_0_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵrestoreView"](_r12); const ctx_r11 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"](); return ctx_r11.disconnect(); });
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](1, "span", 10);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](2, "\u00D7");
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
 } }
 const connectButtonText = 'Connect HRM';
 class HeartRateComponent {
-    constructor(heartRateDevice) {
+    constructor(heartRateDevice, wakelockHelper, logger) {
         this.heartRateDevice = heartRateDevice;
+        this.wakelockHelper = wakelockHelper;
+        this.logger = logger;
         this._buttonText = connectButtonText;
         this._buttonEnabled = true;
     }
@@ -418,16 +425,11 @@ class HeartRateComponent {
     }
     disconnect() {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
-            this.reset();
             if (this.subscription) {
                 this.subscription.unsubscribe();
                 this.subscription = undefined;
             }
-            if (this.wakeLockSentinel) {
-                this.wakeLockSentinel.release();
-                this.wakeLockSentinel = undefined;
-            }
-            yield this.heartRateDevice.disconnect();
+            this.reset();
         });
     }
     dismissMessages() {
@@ -439,8 +441,7 @@ class HeartRateComponent {
         this._buttonEnabled = false;
         this._buttonText = 'Connecting...';
         this.subscription = this.heartRateDevice.connect().subscribe((result) => this.handleUpdate(result), (error) => this.handleError(error, 'Error connecting to sensor'));
-        const wakeLockSubscription = Object(_helpers__WEBPACK_IMPORTED_MODULE_2__["maintainWakeLock"])().subscribe();
-        this.subscription.add(wakeLockSubscription);
+        this.subscription.add(this.wakelockHelper.maintainWakeLock().subscribe());
     }
     reset() {
         this._buttonEnabled = true;
@@ -454,7 +455,7 @@ class HeartRateComponent {
         this._buttonEnabled = false;
         this._buttonText = undefined;
         this._heartRate = result.heartRate;
-        console.log(`Heart Rate Result`, result);
+        this.logger.trace(`Heart Rate Result`, result);
     }
     handleError(error, message) {
         this.disconnect();
@@ -466,31 +467,31 @@ class HeartRateComponent {
         }
     }
 }
-HeartRateComponent.ɵfac = function HeartRateComponent_Factory(t) { return new (t || HeartRateComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_devices__WEBPACK_IMPORTED_MODULE_4__["HeartRateDevice"])); };
-HeartRateComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdefineComponent"]({ type: HeartRateComponent, selectors: [["heart-rate"]], decls: 9, vars: 5, consts: [[1, "d-flex", "flex-column", "h-100"], ["class", "alert alert-warning alert-dismissible mt-3", 4, "ngIf"], ["class", "alert alert-danger alert-dismissible mt-3", 4, "ngIf"], [1, "center-content", "position-relative"], ["class", "button-overlay center-content", 4, "ngIf"], ["class", "button-overlay center-content heart-rate", 4, "ngIf"], [1, "bi-heart-fill"], ["type", "button", "class", "close close-button", "aria-label", "Close", 3, "click", 4, "ngIf"], [1, "alert", "alert-warning", "alert-dismissible", "mt-3"], ["type", "button", "aria-label", "Close", 1, "close", 3, "click"], ["aria-hidden", "true"], [1, "alert", "alert-danger", "alert-dismissible", "mt-3"], [1, "button-overlay", "center-content"], ["type", "button", 1, "btn", "btn-primary", 3, "disabled", "click"], [1, "button-overlay", "center-content", "heart-rate"], ["type", "button", "aria-label", "Close", 1, "close", "close-button", 3, "click"]], template: function HeartRateComponent_Template(rf, ctx) { if (rf & 1) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "div", 0);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](1, HeartRateComponent_div_1_Template, 5, 1, "div", 1);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](2, HeartRateComponent_div_2_Template, 5, 1, "div", 2);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](3, "div", 3);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](4, HeartRateComponent_div_4_Template, 3, 2, "div", 4);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](5, HeartRateComponent_div_5_Template, 2, 1, "div", 5);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](6, "div");
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](7, "i", 6);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](8, HeartRateComponent_button_8_Template, 3, 0, "button", 7);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+HeartRateComponent.ɵfac = function HeartRateComponent_Factory(t) { return new (t || HeartRateComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdirectiveInject"](_devices__WEBPACK_IMPORTED_MODULE_3__["HeartRateDevice"]), _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdirectiveInject"](_helpers__WEBPACK_IMPORTED_MODULE_4__["WakelockHelper"]), _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdirectiveInject"](_helpers__WEBPACK_IMPORTED_MODULE_4__["Logger"])); };
+HeartRateComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdefineComponent"]({ type: HeartRateComponent, selectors: [["heart-rate"]], decls: 9, vars: 5, consts: [[1, "d-flex", "flex-column", "h-100"], ["class", "alert alert-warning alert-dismissible mt-3", 4, "ngIf"], ["class", "alert alert-danger alert-dismissible mt-3", 4, "ngIf"], [1, "center-content", "position-relative"], ["class", "button-overlay center-content", 4, "ngIf"], ["class", "button-overlay center-content heart-rate", 4, "ngIf"], [1, "bi-heart-fill"], ["type", "button", "class", "close close-button", "aria-label", "Close", 3, "click", 4, "ngIf"], [1, "alert", "alert-warning", "alert-dismissible", "mt-3"], ["type", "button", "aria-label", "Close", 1, "close", 3, "click"], ["aria-hidden", "true"], [1, "alert", "alert-danger", "alert-dismissible", "mt-3"], [1, "button-overlay", "center-content"], ["type", "button", 1, "btn", "btn-primary", 3, "disabled", "click"], [1, "button-overlay", "center-content", "heart-rate"], ["type", "button", "aria-label", "Close", 1, "close", "close-button", 3, "click"]], template: function HeartRateComponent_Template(rf, ctx) { if (rf & 1) {
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "div", 0);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](1, HeartRateComponent_div_1_Template, 5, 1, "div", 1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](2, HeartRateComponent_div_2_Template, 5, 1, "div", 2);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](3, "div", 3);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](4, HeartRateComponent_div_4_Template, 3, 2, "div", 4);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](5, HeartRateComponent_div_5_Template, 2, 1, "div", 5);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](6, "div");
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](7, "i", 6);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](8, HeartRateComponent_button_8_Template, 3, 0, "button", 7);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
     } if (rf & 2) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx.warningMessage != null);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx.errorMessage != null);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](2);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx.buttonText != null);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx.heartRate != null);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](3);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx.canDisconnect);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngIf", ctx.warningMessage != null);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngIf", ctx.errorMessage != null);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](2);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngIf", ctx.buttonText != null);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngIf", ctx.heartRate != null);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](3);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngIf", ctx.canDisconnect);
     } }, directives: [_angular_common__WEBPACK_IMPORTED_MODULE_5__["NgIf"]], styles: [".bi-heart-fill[_ngcontent-%COMP%] {\n  color: red;\n  font-size: 5rem;\n}\n\n.heart-rate[_ngcontent-%COMP%] {\n  font-size: 3rem;\n}\n\n.button-overlay[_ngcontent-%COMP%] {\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  position: absolute;\n}\n\n.close-button[_ngcontent-%COMP%] {\n  top: 0;\n  right: 0;\n  position: absolute;\n}\n\n.center-content[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n\n.btn.disabled[_ngcontent-%COMP%], .btn[_ngcontent-%COMP%]:disabled {\n  opacity: 1;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uLy4uL2hlYXJ0LXJhdGUuY29tcG9uZW50LnNjc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQ0E7RUFDSSxVQUFBO0VBQ0EsZUFBQTtBQUFKOztBQUdBO0VBQ0ksZUFBQTtBQUFKOztBQUdBO0VBQ0ksTUFBQTtFQUNBLE9BQUE7RUFDQSxRQUFBO0VBQ0EsU0FBQTtFQUNBLGtCQUFBO0FBQUo7O0FBR0E7RUFDSSxNQUFBO0VBQ0EsUUFBQTtFQUNBLGtCQUFBO0FBQUo7O0FBR0E7RUFDSSxhQUFBO0VBQ0EsdUJBQUE7RUFDQSxtQkFBQTtBQUFKOztBQUlJO0VBRUksVUFBQTtBQUZSIiwiZmlsZSI6ImhlYXJ0LXJhdGUuY29tcG9uZW50LnNjc3MiLCJzb3VyY2VzQ29udGVudCI6WyJcbi5iaS1oZWFydC1maWxse1xuICAgIGNvbG9yOiByZWQ7XG4gICAgZm9udC1zaXplOiA1cmVtO1xufVxuXG4uaGVhcnQtcmF0ZXtcbiAgICBmb250LXNpemU6IDNyZW07XG59XG5cbi5idXR0b24tb3ZlcmxheXtcbiAgICB0b3A6IDA7XG4gICAgbGVmdDogMDtcbiAgICByaWdodDogMDtcbiAgICBib3R0b206IDA7XG4gICAgcG9zaXRpb246IGFic29sdXRlO1xufVxuXG4uY2xvc2UtYnV0dG9ue1xuICAgIHRvcDogMDtcbiAgICByaWdodDogMDtcbiAgICBwb3NpdGlvbjogYWJzb2x1dGU7XG59XG5cbi5jZW50ZXItY29udGVudCB7XG4gICAgZGlzcGxheTogZmxleDtcbiAgICBqdXN0aWZ5LWNvbnRlbnQ6IGNlbnRlcjtcbiAgICBhbGlnbi1pdGVtczogY2VudGVyO1xufVxuXG4uYnRuIHtcbiAgICAmLmRpc2FibGVkLFxuICAgICY6ZGlzYWJsZWQge1xuICAgICAgICBvcGFjaXR5OiAxO1xuICAgIH1cbn1cbiJdfQ== */"] });
 
 
@@ -529,7 +530,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_heart_rate_heart_rate_component__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/heart-rate/heart-rate.component */ "YfhS");
 /* harmony import */ var _components_trainer_trainer_component__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/trainer/trainer.component */ "jI5g");
 /* harmony import */ var _devices_heart_rate_device__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./devices/heart-rate.device */ "PdRg");
-/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @angular/core */ "fXoL");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./helpers */ "6rF9");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @angular/core */ "fXoL");
+
 
 
 
@@ -539,9 +542,9 @@ __webpack_require__.r(__webpack_exports__);
 
 class AppModule {
 }
-AppModule.ɵmod = _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵdefineNgModule"]({ type: AppModule, bootstrap: [_components_app_app_component__WEBPACK_IMPORTED_MODULE_2__["AppComponent"]] });
-AppModule.ɵinj = _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵdefineInjector"]({ factory: function AppModule_Factory(t) { return new (t || AppModule)(); }, providers: [_devices_heart_rate_device__WEBPACK_IMPORTED_MODULE_5__["HeartRateDevice"]], imports: [[_angular_platform_browser__WEBPACK_IMPORTED_MODULE_0__["BrowserModule"], _app_routing_module__WEBPACK_IMPORTED_MODULE_1__["AppRoutingModule"]]] });
-(function () { (typeof ngJitMode === "undefined" || ngJitMode) && _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵsetNgModuleScope"](AppModule, { declarations: [_components_app_app_component__WEBPACK_IMPORTED_MODULE_2__["AppComponent"], _components_heart_rate_heart_rate_component__WEBPACK_IMPORTED_MODULE_3__["HeartRateComponent"], _components_trainer_trainer_component__WEBPACK_IMPORTED_MODULE_4__["TrainerComponent"]], imports: [_angular_platform_browser__WEBPACK_IMPORTED_MODULE_0__["BrowserModule"], _app_routing_module__WEBPACK_IMPORTED_MODULE_1__["AppRoutingModule"]] }); })();
+AppModule.ɵmod = _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵdefineNgModule"]({ type: AppModule, bootstrap: [_components_app_app_component__WEBPACK_IMPORTED_MODULE_2__["AppComponent"]] });
+AppModule.ɵinj = _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵdefineInjector"]({ factory: function AppModule_Factory(t) { return new (t || AppModule)(); }, providers: [_devices_heart_rate_device__WEBPACK_IMPORTED_MODULE_5__["HeartRateDevice"], _helpers__WEBPACK_IMPORTED_MODULE_6__["Logger"], _helpers__WEBPACK_IMPORTED_MODULE_6__["BluetoothHelper"], _helpers__WEBPACK_IMPORTED_MODULE_6__["WakelockHelper"]], imports: [[_angular_platform_browser__WEBPACK_IMPORTED_MODULE_0__["BrowserModule"], _app_routing_module__WEBPACK_IMPORTED_MODULE_1__["AppRoutingModule"]]] });
+(function () { (typeof ngJitMode === "undefined" || ngJitMode) && _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵsetNgModuleScope"](AppModule, { declarations: [_components_app_app_component__WEBPACK_IMPORTED_MODULE_2__["AppComponent"], _components_heart_rate_heart_rate_component__WEBPACK_IMPORTED_MODULE_3__["HeartRateComponent"], _components_trainer_trainer_component__WEBPACK_IMPORTED_MODULE_4__["TrainerComponent"]], imports: [_angular_platform_browser__WEBPACK_IMPORTED_MODULE_0__["BrowserModule"], _app_routing_module__WEBPACK_IMPORTED_MODULE_1__["AppRoutingModule"]] }); })();
 
 
 /***/ }),
@@ -550,48 +553,57 @@ AppModule.ɵinj = _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵdefineInjector
 /*!********************************************!*\
   !*** ./src/app/helpers/wakelock.helper.ts ***!
   \********************************************/
-/*! exports provided: maintainWakeLock */
+/*! exports provided: WakelockHelper */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "maintainWakeLock", function() { return maintainWakeLock; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WakelockHelper", function() { return WakelockHelper; });
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! rxjs */ "qCKp");
 /* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! rxjs/operators */ "kU1M");
-/* harmony import */ var _messages_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./messages.helper */ "3IcY");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/core */ "fXoL");
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./logger */ "Dw+o");
 
 
 
-function maintainWakeLock() {
-    return requestWakeLock().pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])((v) => listenForRelease(v)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])(() => requestWakeLock()));
-}
-function requestWakeLock() {
-    return new rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"]((observer) => {
-        let _sentinel;
-        navigator.wakeLock.request('screen').then((sentinel) => {
-            Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])('Wake Lock Obtained', sentinel);
-            _sentinel = sentinel;
-            observer.next(sentinel);
-        }, (error) => observer.error(error));
-        return {
-            unsubscribe: () => {
-                if (_sentinel != null) {
-                    Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Releasing wakelock`);
-                    _sentinel.release();
-                }
-            },
-        };
-    });
-}
-function listenForRelease(sentinel) {
-    return new rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"]((observer) => {
-        Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Listening for wake lock release`);
-        sentinel.addEventListener('onrelease', (event) => {
-            Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Wake Lock Released`);
-            observer.next(event);
+
+class WakelockHelper {
+    constructor(logger) {
+        this.logger = logger;
+    }
+    maintainWakeLock() {
+        return this.requestWakeLock().pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])((v) => this.listenForRelease(v)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])(() => this.requestWakeLock()));
+    }
+    requestWakeLock() {
+        return new rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"]((observer) => {
+            let _sentinel;
+            navigator.wakeLock.request('screen').then((sentinel) => {
+                this.logger.info('Wake Lock Obtained', sentinel);
+                _sentinel = sentinel;
+                observer.next(sentinel);
+            }, (error) => observer.error(error));
+            return {
+                unsubscribe: () => {
+                    if (_sentinel != null) {
+                        this.logger.info(`Releasing wakelock`);
+                        _sentinel.release();
+                    }
+                },
+            };
         });
-    });
+    }
+    listenForRelease(sentinel) {
+        return new rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"]((observer) => {
+            this.logger.info(`Listening for wake lock release`);
+            sentinel.addEventListener('onrelease', (event) => {
+                this.logger.warn(`Wake Lock Released`);
+                observer.next(event);
+            });
+        });
+    }
 }
+WakelockHelper.ɵfac = function WakelockHelper_Factory(t) { return new (t || WakelockHelper)(_angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵinject"](_logger__WEBPACK_IMPORTED_MODULE_3__["Logger"])); };
+WakelockHelper.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdefineInjectable"]({ token: WakelockHelper, factory: WakelockHelper.ɵfac });
 
 
 /***/ }),
@@ -600,130 +612,136 @@ function listenForRelease(sentinel) {
 /*!*********************************************!*\
   !*** ./src/app/helpers/bluetooth.helper.ts ***!
   \*********************************************/
-/*! exports provided: requestDevice, connectServer, getService, getNotifications, timeOutStream, deviceDisconnectionStream */
+/*! exports provided: BluetoothHelper */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "requestDevice", function() { return requestDevice; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "connectServer", function() { return connectServer; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getService", function() { return getService; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getNotifications", function() { return getNotifications; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "timeOutStream", function() { return timeOutStream; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deviceDisconnectionStream", function() { return deviceDisconnectionStream; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BluetoothHelper", function() { return BluetoothHelper; });
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! rxjs */ "qCKp");
 /* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! rxjs/operators */ "kU1M");
-/* harmony import */ var _messages_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./messages.helper */ "3IcY");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/core */ "fXoL");
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./logger */ "Dw+o");
 
 
 
-const retryCount = 5;
-function requestDevice(services, retries = 0) {
-    Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])('Requesting Device...', services);
-    const requestStream = Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["from"])(navigator.bluetooth.requestDevice({ filters: [{ services }] })).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["tap"])((device) => Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Device Selected: ${device.name}`, device)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["catchError"])((err) => {
-        if (retries >= retryCount || err.name === 'NotFoundError') {
-            throw err;
-        }
-        else {
-            Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Error selecting device`, err);
-            return requestDevice(services, retries + 1);
-        }
-    }));
-    return requestStream;
-}
-function connectServer(device, retries = 0) {
-    if (device.gatt == null) {
-        throw new Error(`gatt is not defined on device`);
+
+class BluetoothHelper {
+    constructor(logger) {
+        this.logger = logger;
     }
-    const server = device.gatt;
-    return new rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"]((observer) => {
-        let unsubscribed = false;
-        Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Connecting to Server...`);
-        server.connect().then(() => {
-            if (unsubscribed) {
-                server.disconnect();
+    requestDevice(services, maxRetries = 5, retries = 0) {
+        this.logger.info('Requesting Device...', services);
+        const requestStream = Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["from"])(navigator.bluetooth.requestDevice({ filters: [{ services }] })).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["tap"])((device) => this.logger.info(`Device Selected: ${device.name}`, device)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["catchError"])((err) => {
+            if (retries >= maxRetries || err.name === 'NotFoundError') {
+                throw err;
             }
             else {
-                Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Server Connected...`, server);
-                observer.next(server);
+                this.logger.error(`Error selecting device`, err);
+                return this.requestDevice(services, maxRetries, retries + 1);
             }
-        }, (error) => observer.error(error));
-        return {
-            unsubscribe: () => {
-                unsubscribed = true;
-                if (server.connected) {
-                    Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`connectServer.unsubscribe: Disconnecting from server...`, server);
+        }));
+        return requestStream;
+    }
+    connectServer(device, maxRetries = 5, retries = 0) {
+        if (device.gatt == null) {
+            throw new Error(`gatt is not defined on device`);
+        }
+        const server = device.gatt;
+        return new rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"]((observer) => {
+            let unsubscribed = false;
+            this.logger.info(`Connecting to Server...`);
+            server.connect().then(() => {
+                if (unsubscribed) {
                     server.disconnect();
                 }
                 else {
-                    Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`connectServer.unsubscribe: Server already disconnected`, server);
+                    this.logger.info(`Server Connected...`, server);
+                    observer.next(server);
                 }
-            },
-        };
-    }).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["catchError"])((err) => {
-        if (retries < retryCount) {
-            Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Error connecting to server`, err);
-            return connectServer(device, retries + 1);
-        }
-        else {
-            throw err;
-        }
-    }));
-}
-function getService(server, service, retries = 0) {
-    Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Getting Service '${service}'...`, server);
-    return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["from"])(server.getPrimaryService(service)).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["tap"])((service) => Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Service Connected`, service)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["catchError"])((err) => {
-        Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Error getting service '${service}' (${retries})`, err);
-        if (!server.connected) {
-            return connectServer(server.device, retries + 1).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])((newConnectionServer) => getService(newConnectionServer, service, retries + 1)));
-        }
-        else if (retries < 3) {
-            return getService(server, service, retries + 1);
-        }
-        else {
-            throw err;
-        }
-    }));
-}
-function getNotifications(characteristic) {
-    characteristic.startNotifications();
-    return new rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"]((observer) => {
-        function handleEvent() {
-            if (characteristic.value != null) {
-                observer.next(characteristic.value);
+            }, (error) => observer.error(error));
+            return {
+                unsubscribe: () => {
+                    unsubscribed = true;
+                    if (server.connected) {
+                        this.logger.info(`connectServer.unsubscribe: Disconnecting from server...`, server);
+                        server.disconnect();
+                    }
+                    else {
+                        this.logger.info(`connectServer.unsubscribe: Server already disconnected`, server);
+                    }
+                },
+            };
+        }).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["catchError"])((err) => {
+            if (retries < maxRetries) {
+                this.logger.error(`Error connecting to server`, err);
+                return this.connectServer(device, maxRetries, retries + 1);
             }
-        }
-        Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Starting Notifications`, characteristic);
-        characteristic.addEventListener('characteristicvaluechanged', handleEvent);
-        return {
-            unsubscribe: () => {
-                characteristic.removeEventListener('characteristicvaluechanged', handleEvent);
-            },
-        };
-    });
+            else {
+                throw err;
+            }
+        }));
+    }
+    getService(server, service, maxRetries = 5, retries = 0) {
+        this.logger.info(`Getting Service '${service}'...`, server);
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["from"])(server.getPrimaryService(service)).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["tap"])((service) => this.logger.info(`Service Connected`, service)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["catchError"])((err) => {
+            this.logger.error(`Error getting service '${service}' (${retries})`, err);
+            if (!server.connected) {
+                return this.connectServer(server.device, maxRetries, retries + 1).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["switchMap"])((newConnectionServer) => this.getService(newConnectionServer, service, maxRetries, retries + 1)));
+            }
+            else if (retries < maxRetries) {
+                return this.getService(server, service, maxRetries, retries + 1);
+            }
+            else {
+                throw err;
+            }
+        }));
+    }
+    getNotifications(characteristic) {
+        characteristic.startNotifications();
+        return new rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"]((observer) => {
+            function handleEvent() {
+                if (characteristic.value != null) {
+                    observer.next(characteristic.value);
+                }
+            }
+            this.logger.info(`Starting Notifications`, characteristic);
+            characteristic.addEventListener('characteristicvaluechanged', handleEvent);
+            return {
+                unsubscribe: () => {
+                    this.logger.info(`UNsubscribe from Notifications`, characteristic);
+                    characteristic.removeEventListener('characteristicvaluechanged', handleEvent);
+                },
+            };
+        });
+    }
+    createTimeOutStream(timeInMs) {
+        this.logger.info(`Starting timeout stream...`, timeInMs);
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["interval"])(timeInMs).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["take"])(1), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["map"])(() => {
+            this.logger.warn(`Stream time out`);
+            throw new Error(`Timeout waiting for device connection.`);
+        }));
+    }
+    createDeviceDisconnectionStream(device) {
+        return new rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"]((observer) => {
+            const logger = this.logger;
+            function handleEvent() {
+                logger.info(`Device '${device.name}' disconnected`, device);
+                observer.next(device);
+            }
+            logger.info(`Add event listener: gattserverdisconnected`, device);
+            device.addEventListener('gattserverdisconnected', handleEvent);
+            return {
+                unsubscribe: () => {
+                    this.logger.info(`Remove Event Listener: gattserverdisconnected`);
+                    device.removeEventListener('gattserverdisconnected', handleEvent);
+                },
+            };
+        });
+    }
 }
-function timeOutStream(timeInMs) {
-    Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Starting timeout...`, timeInMs);
-    return Object(rxjs__WEBPACK_IMPORTED_MODULE_0__["interval"])(timeInMs).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["take"])(1), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["map"])(() => {
-        throw new Error(`Timeout waiting for device connection.`);
-    }));
-}
-function deviceDisconnectionStream(device) {
-    return new rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"]((observer) => {
-        function handleEvent() {
-            Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Device '${device.name}' disconnected`, device);
-            observer.next(device);
-        }
-        Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Add event listener: gattserverdisconnected`, device);
-        device.addEventListener('gattserverdisconnected', handleEvent);
-        return {
-            unsubscribe: () => {
-                Object(_messages_helper__WEBPACK_IMPORTED_MODULE_2__["createProgress"])(`Remove Event Listener: gattserverdisconnected`);
-                device.removeEventListener('gattserverdisconnected', handleEvent);
-            },
-        };
-    });
-}
+BluetoothHelper.ɵfac = function BluetoothHelper_Factory(t) { return new (t || BluetoothHelper)(_angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵinject"](_logger__WEBPACK_IMPORTED_MODULE_3__["Logger"])); };
+BluetoothHelper.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdefineInjectable"]({ token: BluetoothHelper, factory: BluetoothHelper.ɵfac });
 
 
 /***/ }),
