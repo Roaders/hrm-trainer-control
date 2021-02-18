@@ -4,7 +4,7 @@
 /*!**********************************************!*\
   !*** ./src/app/helpers/heart-rate.helper.ts ***!
   \**********************************************/
-/*! exports provided: HEART_RATE_SERVICE, HEART_RATE_CHARACTERISTIC, rate16Bits, contactDetected, contactSensorPresent, energyPresent, rrIntervalPresent, parseHeartRate */
+/*! exports provided: HEART_RATE_SERVICE, HEART_RATE_CHARACTERISTIC, rate16Bits, contactDetected, contactSensorPresent, energyPresent, rrIntervalPresent, parseHeartRate, averageHeartRate */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -17,7 +17,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "energyPresent", function() { return energyPresent; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "rrIntervalPresent", function() { return rrIntervalPresent; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parseHeartRate", function() { return parseHeartRate; });
-/* harmony import */ var _type_guards_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./type-guards.helper */ "VPBO");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "averageHeartRate", function() { return averageHeartRate; });
+/* harmony import */ var _timer_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./timer.helper */ "FUOC");
+/* harmony import */ var _type_guards_helper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./type-guards.helper */ "VPBO");
+
 
 const HEART_RATE_SERVICE = 'heart_rate';
 const HEART_RATE_CHARACTERISTIC = `heart_rate_measurement`;
@@ -28,7 +31,8 @@ const energyPresent = 0x8;
 const rrIntervalPresent = 0x10;
 function parseHeartRate(value) {
     // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
-    value = Object(_type_guards_helper__WEBPACK_IMPORTED_MODULE_0__["isDataView"])(value) ? value : new DataView(value);
+    value = Object(_type_guards_helper__WEBPACK_IMPORTED_MODULE_1__["isDataView"])(value) ? value : new DataView(value);
+    const timestamp = Object(_timer_helper__WEBPACK_IMPORTED_MODULE_0__["now"])();
     const flags = value.getUint8(0);
     const rate16BitsFlag = flags & rate16Bits;
     const result = {};
@@ -59,7 +63,37 @@ function parseHeartRate(value) {
             result.rrIntervals.push(value.getUint16(index, /*littleEndian=*/ true));
         }
     }
-    return Object.assign({ heartRate }, result);
+    return Object.assign({ heartRate, timestamp }, result);
+}
+function averageHeartRate(readings) {
+    const { duration, value } = readings
+        .reduce(reduceToPairs, [])
+        .map(pairToAverageForDuration)
+        .reduce(sumValueAndDuration, { value: 0, duration: 0 });
+    return Math.round(duration === 0 ? value : value / duration);
+}
+function sumValueAndDuration(total, current) {
+    const duration = total.duration + current.duration;
+    if (duration === 0 && total.value === 0) {
+        return { duration, value: current.value };
+    }
+    return { duration, value: total.value + current.duration * current.value };
+}
+function pairToAverageForDuration(pair) {
+    if (pair[1] == null) {
+        return { value: pair[0].heartRate, duration: 0 };
+    }
+    const duration = pair[1].timestamp - pair[0].timestamp;
+    const average = (pair[0].heartRate + pair[1].heartRate) / 2;
+    return { value: average, duration };
+}
+function reduceToPairs(pairs, result, index, readings) {
+    console.log(`index: ${index} mod 2 ${index % 2}`);
+    console.log(`index: ${index}`);
+    if (index % 2 === 0) {
+        pairs.push([result, readings[index + 1]]);
+    }
+    return pairs;
 }
 
 
@@ -81,7 +115,7 @@ module.exports = __webpack_require__(/*! /home/runner/work/hrm-trainer-control/h
 /*!**********************************!*\
   !*** ./src/app/helpers/index.ts ***!
   \**********************************/
-/*! exports provided: BluetoothHelper, HEART_RATE_SERVICE, HEART_RATE_CHARACTERISTIC, rate16Bits, contactDetected, contactSensorPresent, energyPresent, rrIntervalPresent, parseHeartRate, LogLevel, Logger, isDataView, isProgressMessage, WakelockHelper */
+/*! exports provided: BluetoothHelper, HEART_RATE_SERVICE, HEART_RATE_CHARACTERISTIC, rate16Bits, contactDetected, contactSensorPresent, energyPresent, rrIntervalPresent, parseHeartRate, averageHeartRate, LogLevel, Logger, isDataView, isProgressMessage, WakelockHelper */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -105,6 +139,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "rrIntervalPresent", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["rrIntervalPresent"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "parseHeartRate", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["parseHeartRate"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "averageHeartRate", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["averageHeartRate"]; });
 
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./logger */ "Dw+o");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LogLevel", function() { return _logger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"]; });
@@ -202,6 +238,23 @@ class Logger {
     trace(message, ...meta) {
         this.log('trace', message, ...meta);
     }
+}
+
+
+/***/ }),
+
+/***/ "FUOC":
+/*!*****************************************!*\
+  !*** ./src/app/helpers/timer.helper.ts ***!
+  \*****************************************/
+/*! exports provided: now */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "now", function() { return now; });
+function now() {
+    return Date.now();
 }
 
 
@@ -777,7 +830,7 @@ TrainerComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineC
 /*! exports provided: name, version, scripts, private, dependencies, devDependencies, description, main, repository, keywords, author, license, bugs, homepage, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"name\":\"hrm-trainer-control\",\"version\":\"0.1.8\",\"scripts\":{\"start\":\"ng serve --open\",\"build\":\"ng build\",\"lint\":\"eslint . --ext .ts,.js\",\"lint:fix\":\"eslint . --ext .ts,.js --fix\",\"prepublishOnly\":\"npm run verify-release\",\"test\":\"karma start --singleRun --browsers ChromeHeadless\",\"test:watch\":\"karma start\",\"verify-release\":\"concurrently --kill-others-on-fail npm:build npm:lint npm:test\"},\"private\":true,\"dependencies\":{\"@angular/animations\":\"~11.1.2\",\"@angular/common\":\"~11.1.2\",\"@angular/compiler\":\"~11.1.2\",\"@angular/core\":\"~11.1.2\",\"@angular/forms\":\"~11.1.2\",\"@angular/platform-browser\":\"~11.1.2\",\"@angular/platform-browser-dynamic\":\"~11.1.2\",\"@angular/router\":\"~11.1.2\",\"bootstrap\":\"^4.6.0\",\"bootstrap-icons\":\"^1.3.0\",\"jquery\":\"^3.5.1\",\"rxjs\":\"~6.6.0\",\"zone.js\":\"~0.11.3\"},\"devDependencies\":{\"@angular-devkit/build-angular\":\"~0.1101.4\",\"@angular/cli\":\"~11.1.4\",\"@angular/compiler-cli\":\"~11.1.2\",\"@types/dom-screen-wake-lock\":\"^1.0.0\",\"@types/jasmine\":\"^3.6.3\",\"@types/node\":\"^12.11.1\",\"@types/web-bluetooth\":\"0.0.9\",\"@typescript-eslint/eslint-plugin\":\"^4.15.0\",\"@typescript-eslint/parser\":\"^4.15.0\",\"concurrently\":\"^5.3.0\",\"eslint\":\"^7.2.0\",\"eslint-config-prettier\":\"^7.2.0\",\"eslint-config-standard\":\"^14.1.1\",\"eslint-plugin-import\":\"^2.22.1\",\"eslint-plugin-node\":\"^11.1.0\",\"eslint-plugin-prettier\":\"^3.3.1\",\"eslint-plugin-promise\":\"^4.3.1\",\"eslint-plugin-simple-import-sort\":\"^7.0.0\",\"eslint-plugin-standard\":\"^5.0.0\",\"jasmine\":\"^3.6.4\",\"karma\":\"^6.1.1\",\"karma-chrome-launcher\":\"^3.1.0\",\"karma-coverage-istanbul-reporter\":\"^3.0.3\",\"karma-jasmine\":\"^4.0.1\",\"karma-jasmine-html-reporter\":\"^1.5.4\",\"karma-source-map-support\":\"^1.4.0\",\"karma-sourcemap-loader\":\"^0.3.8\",\"karma-webpack\":\"^4.0.2\",\"popper.js\":\"^1.16.1\",\"prettier\":\"^2.2.1\",\"puppeteer\":\"^7.1.0\",\"ts-loader\":\"^8.0.17\",\"typescript\":\"~4.1.2\",\"webpack\":\"^4.46.0\"},\"description\":\"This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.1.4.\",\"main\":\".eslintrc.js\",\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/Roaders/hrm-trainer-control.git\"},\"keywords\":[],\"author\":\"\",\"license\":\"ISC\",\"bugs\":{\"url\":\"https://github.com/Roaders/hrm-trainer-control/issues\"},\"homepage\":\"https://github.com/Roaders/hrm-trainer-control#readme\"}");
+module.exports = JSON.parse("{\"name\":\"hrm-trainer-control\",\"version\":\"0.1.8\",\"scripts\":{\"start\":\"ng serve --open\",\"build\":\"ng build\",\"lint\":\"eslint . --ext .ts,.js\",\"lint:fix\":\"eslint . --ext .ts,.js --fix\",\"prepublishOnly\":\"npm run verify-release\",\"test\":\"karma start --singleRun --browsers ChromeHeadless\",\"test:watch\":\"karma start\",\"verify-release\":\"concurrently --kill-others-on-fail npm:build npm:lint npm:test\"},\"private\":true,\"dependencies\":{\"@angular/animations\":\"~11.1.2\",\"@angular/common\":\"~11.1.2\",\"@angular/compiler\":\"~11.1.2\",\"@angular/core\":\"~11.1.2\",\"@angular/forms\":\"~11.1.2\",\"@angular/platform-browser\":\"~11.1.2\",\"@angular/platform-browser-dynamic\":\"~11.1.2\",\"@angular/router\":\"~11.1.2\",\"@morgan-stanley/ts-mocking-bird\":\"^0.4.0\",\"bootstrap\":\"^4.6.0\",\"bootstrap-icons\":\"^1.3.0\",\"jquery\":\"^3.5.1\",\"rxjs\":\"~6.6.0\",\"zone.js\":\"~0.11.3\"},\"devDependencies\":{\"@angular-devkit/build-angular\":\"~0.1101.4\",\"@angular/cli\":\"~11.1.4\",\"@angular/compiler-cli\":\"~11.1.2\",\"@types/dom-screen-wake-lock\":\"^1.0.0\",\"@types/jasmine\":\"^3.6.3\",\"@types/node\":\"^12.11.1\",\"@types/web-bluetooth\":\"0.0.9\",\"@typescript-eslint/eslint-plugin\":\"^4.15.0\",\"@typescript-eslint/parser\":\"^4.15.0\",\"concurrently\":\"^5.3.0\",\"eslint\":\"^7.2.0\",\"eslint-config-prettier\":\"^7.2.0\",\"eslint-config-standard\":\"^14.1.1\",\"eslint-plugin-import\":\"^2.22.1\",\"eslint-plugin-node\":\"^11.1.0\",\"eslint-plugin-prettier\":\"^3.3.1\",\"eslint-plugin-promise\":\"^4.3.1\",\"eslint-plugin-simple-import-sort\":\"^7.0.0\",\"eslint-plugin-standard\":\"^5.0.0\",\"jasmine\":\"^3.6.4\",\"karma\":\"^6.1.1\",\"karma-chrome-launcher\":\"^3.1.0\",\"karma-coverage-istanbul-reporter\":\"^3.0.3\",\"karma-jasmine\":\"^4.0.1\",\"karma-jasmine-html-reporter\":\"^1.5.4\",\"karma-source-map-support\":\"^1.4.0\",\"karma-sourcemap-loader\":\"^0.3.8\",\"karma-webpack\":\"^4.0.2\",\"popper.js\":\"^1.16.1\",\"prettier\":\"^2.2.1\",\"puppeteer\":\"^7.1.0\",\"ts-loader\":\"^8.0.17\",\"typescript\":\"~4.1.2\",\"webpack\":\"^4.46.0\"},\"description\":\"This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.1.4.\",\"main\":\".eslintrc.js\",\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/Roaders/hrm-trainer-control.git\"},\"keywords\":[],\"author\":\"\",\"license\":\"ISC\",\"bugs\":{\"url\":\"https://github.com/Roaders/hrm-trainer-control/issues\"},\"homepage\":\"https://github.com/Roaders/hrm-trainer-control#readme\"}");
 
 /***/ }),
 
