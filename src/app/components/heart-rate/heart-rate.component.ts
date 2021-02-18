@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 import { NOT_FOUND_ERROR } from '../../constants';
 import { HeartRateResult } from '../../contracts';
 import { HeartRateDevice } from '../../devices';
-import { maintainWakeLock } from '../../helpers';
+import { Logger, WakelockHelper } from '../../helpers';
 
 const connectButtonText = 'Connect HRM';
 
@@ -14,9 +14,11 @@ const connectButtonText = 'Connect HRM';
     styleUrls: ['./heart-rate.component.scss'],
 })
 export class HeartRateComponent {
-    private wakeLockSentinel: WakeLockSentinel | undefined;
-
-    constructor(private heartRateDevice: HeartRateDevice) {}
+    constructor(
+        private heartRateDevice: HeartRateDevice,
+        private wakelockHelper: WakelockHelper,
+        private logger: Logger,
+    ) {}
 
     private _warningMessage?: string;
 
@@ -55,19 +57,12 @@ export class HeartRateComponent {
     }
 
     public async disconnect(): Promise<void> {
-        this.reset();
-
         if (this.subscription) {
             this.subscription.unsubscribe();
             this.subscription = undefined;
         }
 
-        if (this.wakeLockSentinel) {
-            this.wakeLockSentinel.release();
-            this.wakeLockSentinel = undefined;
-        }
-
-        await this.heartRateDevice.disconnect();
+        this.reset();
     }
 
     public dismissMessages(): void {
@@ -85,8 +80,7 @@ export class HeartRateComponent {
             (error) => this.handleError(error, 'Error connecting to sensor'),
         );
 
-        const wakeLockSubscription = maintainWakeLock().subscribe();
-        this.subscription.add(wakeLockSubscription);
+        this.subscription.add(this.wakelockHelper.maintainWakeLock().subscribe());
     }
 
     private reset(): void {
@@ -102,7 +96,7 @@ export class HeartRateComponent {
         this._buttonEnabled = false;
         this._buttonText = undefined;
         this._heartRate = result.heartRate;
-        console.log(`Heart Rate Result`, result);
+        this.logger.trace(`Heart Rate Result`, result);
     }
 
     private handleError(error: unknown, message?: string) {

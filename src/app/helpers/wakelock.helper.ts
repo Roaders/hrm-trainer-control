@@ -1,46 +1,52 @@
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
-import { createProgress } from './messages.helper';
+import { Logger } from './logger';
 
-export function maintainWakeLock(): Observable<WakeLockSentinel> {
-    return requestWakeLock().pipe(
-        switchMap((v) => listenForRelease(v)),
-        switchMap(() => requestWakeLock()),
-    );
-}
+@Injectable()
+export class WakelockHelper {
+    constructor(private logger: Logger) {}
 
-function requestWakeLock(): Observable<WakeLockSentinel> {
-    return new Observable((observer) => {
-        let _sentinel: WakeLockSentinel | undefined;
-
-        navigator.wakeLock.request('screen').then(
-            (sentinel) => {
-                createProgress('Wake Lock Obtained', sentinel);
-                _sentinel = sentinel;
-                observer.next(sentinel);
-            },
-            (error) => observer.error(error),
+    public maintainWakeLock(): Observable<WakeLockSentinel> {
+        return this.requestWakeLock().pipe(
+            switchMap((v) => this.listenForRelease(v)),
+            switchMap(() => this.requestWakeLock()),
         );
+    }
 
-        return {
-            unsubscribe: () => {
-                if (_sentinel != null) {
-                    createProgress(`Releasing wakelock`);
-                    _sentinel.release();
-                }
-            },
-        };
-    });
-}
+    private requestWakeLock(): Observable<WakeLockSentinel> {
+        return new Observable((observer) => {
+            let _sentinel: WakeLockSentinel | undefined;
 
-function listenForRelease(sentinel: WakeLockSentinel): Observable<Event> {
-    return new Observable((observer) => {
-        createProgress(`Listening for wake lock release`);
+            navigator.wakeLock.request('screen').then(
+                (sentinel) => {
+                    this.logger.info('Wake Lock Obtained', sentinel);
+                    _sentinel = sentinel;
+                    observer.next(sentinel);
+                },
+                (error) => observer.error(error),
+            );
 
-        sentinel.addEventListener('onrelease', (event) => {
-            createProgress(`Wake Lock Released`);
-            observer.next(event);
+            return {
+                unsubscribe: () => {
+                    if (_sentinel != null) {
+                        this.logger.info(`Releasing wakelock`);
+                        _sentinel.release();
+                    }
+                },
+            };
         });
-    });
+    }
+
+    private listenForRelease(sentinel: WakeLockSentinel): Observable<Event> {
+        return new Observable((observer) => {
+            this.logger.info(`Listening for wake lock release`);
+
+            sentinel.addEventListener('onrelease', (event) => {
+                this.logger.warn(`Wake Lock Released`);
+                observer.next(event);
+            });
+        });
+    }
 }

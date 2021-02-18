@@ -6,11 +6,12 @@ import { AppComponent } from './components/app/app.component';
 import { HeartRateComponent } from './components/heart-rate/heart-rate.component';
 import { TrainerComponent } from './components/trainer/trainer.component';
 import { HeartRateDevice } from './devices/heart-rate.device';
+import { BluetoothHelper, Logger, WakelockHelper } from './helpers';
 
 @NgModule({
     declarations: [AppComponent, HeartRateComponent, TrainerComponent],
     imports: [BrowserModule, AppRoutingModule],
-    providers: [HeartRateDevice],
+    providers: [HeartRateDevice, Logger, BluetoothHelper, WakelockHelper],
     bootstrap: [AppComponent],
 })
 export class AppModule {}
