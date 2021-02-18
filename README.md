@@ -9,4 +9,3 @@ Try it out [here](https://roaders.github.io/hrm-trainer-control/).
 ## TODO:
 
  * save logging output to file
- * do not push progress messages in streams, use logging provider

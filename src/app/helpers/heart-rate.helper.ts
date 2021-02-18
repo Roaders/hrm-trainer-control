@@ -1,4 +1,5 @@
 import { HeartRateResult } from '../contracts';
+import { now } from './timer.helper';
 import { isDataView } from './type-guards.helper';
 
 export const HEART_RATE_SERVICE = 'heart_rate';
@@ -14,6 +15,7 @@ export function parseHeartRate(value: DataView | ArrayBuffer): HeartRateResult {
     // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
     value = isDataView(value) ? value : new DataView(value);
 
+    const timestamp = now();
     const flags = value.getUint8(0);
     const rate16BitsFlag = flags & rate16Bits;
     const result: Partial<HeartRateResult> = {};
@@ -48,5 +50,54 @@ export function parseHeartRate(value: DataView | ArrayBuffer): HeartRateResult {
         }
     }
 
-    return { heartRate, ...result };
+    return { heartRate, timestamp, ...result };
+}
+
+type HeartRatePair = [HeartRateResult, HeartRateResult?];
+type ValueDuration = { value: number; duration: number };
+
+export function averageHeartRate(readings: HeartRateResult[]): number {
+    const { duration, value } = readings
+        .reduce<HeartRatePair[]>(reduceToPairs, [])
+        .map(pairToAverageForDuration)
+        .reduce(sumValueAndDuration, { value: 0, duration: 0 });
+
+    return Math.round(duration === 0 ? value : value / duration);
+}
+
+function sumValueAndDuration(total: ValueDuration, current: ValueDuration): ValueDuration {
+    const duration = total.duration + current.duration;
+
+    if (duration === 0 && total.value === 0) {
+        return { duration, value: current.value };
+    }
+
+    return { duration, value: total.value + current.duration * current.value };
+}
+
+function pairToAverageForDuration(pair: HeartRatePair): ValueDuration {
+    if (pair[1] == null) {
+        return { value: pair[0].heartRate, duration: 0 };
+    }
+
+    const duration = pair[1].timestamp - pair[0].timestamp;
+    const average = (pair[0].heartRate + pair[1].heartRate) / 2;
+
+    return { value: average, duration };
+}
+
+function reduceToPairs(
+    pairs: HeartRatePair[],
+    result: HeartRateResult,
+    index: number,
+    readings: HeartRateResult[],
+): HeartRatePair[] {
+    console.log(`index: ${index} mod 2 ${index % 2}`);
+    console.log(`index: ${index}`);
+
+    if (index % 2 === 0) {
+        pairs.push([result, readings[index + 1]]);
+    }
+
+    return pairs;
 }
