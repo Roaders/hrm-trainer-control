@@ -1,8 +1,11 @@
 import { replaceProperties } from '@morgan-stanley/ts-mocking-bird';
+import { from } from 'rxjs';
+import { scan, toArray } from 'rxjs/operators';
 
-import { HeartRateResult } from '../contracts';
+import { HeartRateAverage, HeartRateResult } from '../contracts';
 import {
     averageHeartRate,
+    calculateTrend,
     contactDetected,
     contactSensorPresent,
     energyPresent,
@@ -12,6 +15,10 @@ import {
 } from './heart-rate.helper';
 import * as sampleData from './heart-rate.test-data.json';
 import * as timerImport from './timer.helper';
+
+const sampleResults: HeartRateResult[] = sampleData
+    .map((d) => ({ heartRate: d.heartRate, timestamp: d.at }))
+    .sort((one, two) => one.timestamp - two.timestamp);
 
 describe('heart-rate.helper', () => {
     describe('parseHeartRate', () => {
@@ -138,10 +145,17 @@ describe('heart-rate.helper', () => {
                 ],
             },
             {
+                expected: 70,
+                readings: [
+                    { heartRate: 80, timestamp: 30 },
+                    { heartRate: 80, timestamp: 20 },
+                    { heartRate: 60, timestamp: 20 }, // TODO write test that fails with incorrect order
+                    { heartRate: 60, timestamp: 10 },
+                ],
+            },
+            {
                 expected: 61,
-                readings: sampleData
-                    .map((d) => ({ heartRate: d.heartRate, timestamp: d.at }))
-                    .filter((d) => d.timestamp < 1613397117528),
+                readings: sampleResults.filter((d) => d.timestamp < 1613397117528),
             },
         ];
 
@@ -152,5 +166,55 @@ describe('heart-rate.helper', () => {
                 expect(averageHeartRate(test.readings)).toEqual(test.expected);
             });
         });
+
+        it(`should return correct average for batched heart rate readings`, () => {
+            const averages = sampleResults
+                .reduce<HeartRateResult[][]>(groupResults, [[]])
+                .map((group) => averageHeartRate(group));
+
+            expect(averages).toEqual([67, 83, 110, 112, 112, 117, 119]);
+        });
     });
+
+    describe('heartRateTrend', () => {
+        it('should add the heart rate trend to averages', () => {
+            const averages = sampleResults
+                .reduce<HeartRateResult[][]>(groupResults, [[]])
+                .map((group) => averageHeartRate(group));
+
+            let trends: HeartRateAverage[] | undefined;
+
+            from(averages)
+                .pipe(
+                    scan<number, HeartRateAverage>(calculateTrend, { average: NaN, trend: NaN }),
+                    toArray(),
+                )
+                .subscribe((result) => (trends = result));
+
+            expect(trends).toEqual([
+                { average: 67, trend: 0 },
+                { average: 83, trend: 16 },
+                { average: 110, trend: 27 },
+                { average: 112, trend: 2 },
+                { average: 112, trend: 0 },
+                { average: 117, trend: 5 },
+                { average: 119, trend: 2 },
+            ]);
+        });
+    });
+
+    function groupResults(groups: HeartRateResult[][], result: HeartRateResult): HeartRateResult[][] {
+        const groupTimeSpan = 1000 * 60;
+        const group = groups[groups.length - 1];
+        const firstResult: HeartRateResult | undefined = group[0];
+        const elapsed = firstResult ? result.timestamp - firstResult.timestamp : 0;
+
+        if (elapsed < groupTimeSpan) {
+            group.push(result);
+        } else {
+            groups.push([result]);
+        }
+
+        return groups;
+    }
 });

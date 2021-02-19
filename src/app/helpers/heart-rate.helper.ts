@@ -1,4 +1,4 @@
-import { HeartRateResult } from '../contracts';
+import { HeartRateAverage, HeartRateResult } from '../contracts';
 import { now } from './timer.helper';
 import { isDataView } from './type-guards.helper';
 
@@ -53,6 +53,14 @@ export function parseHeartRate(value: DataView | ArrayBuffer): HeartRateResult {
     return { heartRate, timestamp, ...result };
 }
 
+export function calculateTrend(last: HeartRateAverage, average: number): HeartRateAverage {
+    if (isNaN(last.average)) {
+        return { average, trend: 0 };
+    }
+
+    return { average, trend: average - last.average };
+}
+
 type HeartRatePair = [HeartRateResult, HeartRateResult?];
 type ValueDuration = { value: number; duration: number };
 
@@ -92,9 +100,6 @@ function reduceToPairs(
     index: number,
     readings: HeartRateResult[],
 ): HeartRatePair[] {
-    console.log(`index: ${index} mod 2 ${index % 2}`);
-    console.log(`index: ${index}`);
-
     if (index % 2 === 0) {
         pairs.push([result, readings[index + 1]]);
     }
