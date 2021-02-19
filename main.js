@@ -4,7 +4,7 @@
 /*!**********************************************!*\
   !*** ./src/app/helpers/heart-rate.helper.ts ***!
   \**********************************************/
-/*! exports provided: HEART_RATE_SERVICE, HEART_RATE_CHARACTERISTIC, rate16Bits, contactDetected, contactSensorPresent, energyPresent, rrIntervalPresent, parseHeartRate, averageHeartRate */
+/*! exports provided: HEART_RATE_SERVICE, HEART_RATE_CHARACTERISTIC, rate16Bits, contactDetected, contactSensorPresent, energyPresent, rrIntervalPresent, parseHeartRate, calculateTrend, averageHeartRate */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -17,6 +17,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "energyPresent", function() { return energyPresent; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "rrIntervalPresent", function() { return rrIntervalPresent; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parseHeartRate", function() { return parseHeartRate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "calculateTrend", function() { return calculateTrend; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "averageHeartRate", function() { return averageHeartRate; });
 /* harmony import */ var _timer_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./timer.helper */ "FUOC");
 /* harmony import */ var _type_guards_helper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./type-guards.helper */ "VPBO");
@@ -65,6 +66,12 @@ function parseHeartRate(value) {
     }
     return Object.assign({ heartRate, timestamp }, result);
 }
+function calculateTrend(last, average) {
+    if (isNaN(last.average)) {
+        return { average, trend: 0 };
+    }
+    return { average, trend: average - last.average };
+}
 function averageHeartRate(readings) {
     const { duration, value } = readings
         .reduce(reduceToPairs, [])
@@ -88,8 +95,6 @@ function pairToAverageForDuration(pair) {
     return { value: average, duration };
 }
 function reduceToPairs(pairs, result, index, readings) {
-    console.log(`index: ${index} mod 2 ${index % 2}`);
-    console.log(`index: ${index}`);
     if (index % 2 === 0) {
         pairs.push([result, readings[index + 1]]);
     }
@@ -115,7 +120,7 @@ module.exports = __webpack_require__(/*! /home/runner/work/hrm-trainer-control/h
 /*!**********************************!*\
   !*** ./src/app/helpers/index.ts ***!
   \**********************************/
-/*! exports provided: BluetoothHelper, HEART_RATE_SERVICE, HEART_RATE_CHARACTERISTIC, rate16Bits, contactDetected, contactSensorPresent, energyPresent, rrIntervalPresent, parseHeartRate, averageHeartRate, LogLevel, Logger, isDataView, isProgressMessage, WakelockHelper */
+/*! exports provided: BluetoothHelper, HEART_RATE_SERVICE, HEART_RATE_CHARACTERISTIC, rate16Bits, contactDetected, contactSensorPresent, energyPresent, rrIntervalPresent, parseHeartRate, calculateTrend, averageHeartRate, LogLevel, Logger, isDataView, WakelockHelper */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -140,6 +145,8 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "parseHeartRate", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["parseHeartRate"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "calculateTrend", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["calculateTrend"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "averageHeartRate", function() { return _heart_rate_helper__WEBPACK_IMPORTED_MODULE_1__["averageHeartRate"]; });
 
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./logger */ "Dw+o");
@@ -149,8 +156,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony import */ var _type_guards_helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./type-guards.helper */ "VPBO");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "isDataView", function() { return _type_guards_helper__WEBPACK_IMPORTED_MODULE_3__["isDataView"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "isProgressMessage", function() { return _type_guards_helper__WEBPACK_IMPORTED_MODULE_3__["isProgressMessage"]; });
 
 /* harmony import */ var _wakelock_helper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./wakelock.helper */ "a7Nh");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WakelockHelper", function() { return _wakelock_helper__WEBPACK_IMPORTED_MODULE_4__["WakelockHelper"]; });
@@ -304,18 +309,14 @@ HeartRateDevice.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdefineI
 /*!***********************************************!*\
   !*** ./src/app/helpers/type-guards.helper.ts ***!
   \***********************************************/
-/*! exports provided: isDataView, isProgressMessage */
+/*! exports provided: isDataView */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isDataView", function() { return isDataView; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isProgressMessage", function() { return isProgressMessage; });
 function isDataView(value) {
     return value != null && value.buffer instanceof ArrayBuffer;
-}
-function isProgressMessage(value) {
-    return value != null && value.type === 'progressMessage';
 }
 
 
